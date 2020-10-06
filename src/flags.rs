@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 bitflags! {
-    pub struct ControllerStatus: u8 {
+    pub struct Status: u8 {
         const OUTPUT_FULL        = 0b00000001;
         const INPUT_FULL         = 0b00000010;
         const SYSTEM_FLAG        = 0b00000100;
@@ -14,7 +14,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerConfig: u8 {
+    pub struct Config: u8 {
         const ENABLE_KEYBOARD_INTERRUPT = 0b00000001;
         const ENABLE_MOUSE_INTERRUPT    = 0b00000010;
         const SET_SYSTEM_FLAG           = 0b00000100;
@@ -25,7 +25,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerInput: u8 {
+    pub struct Input: u8 {
         const KEYBOARD_DATA        = 0b00000001;
         const MOUSE_DATA           = 0b00000010;
         const ENABLE_EXTRA_RAM     = 0b00010000;
@@ -36,7 +36,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerOutput: u8 {
+    pub struct Output: u8 {
         const SYSTEM_RESET       = 0b00000001;
         const A20_GATE           = 0b00000010;
         const MOUSE_DATA         = 0b00000100;
@@ -45,5 +45,17 @@ bitflags! {
         const MOUSE_INTERRUPT    = 0b00100000;
         const KEYBOARD_CLOCK     = 0b01000000;
         const KEYBOARD_DATA      = 0b10000000;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn undefined_bits_test() {
+        // Undefined bits in config byte and input port default to 0
+        assert_eq!(Config::all().bits(), 0b01110111);
+        assert_eq!(Input::all().bits(), 0b11110011);
     }
 }
