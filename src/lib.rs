@@ -10,7 +10,7 @@
 
 mod controller;
 pub mod error;
-mod flags;
+pub mod flags;
 mod response;
 
-pub use self::{controller::Controller, flags::*, response::*};
+pub use self::controller::Controller;

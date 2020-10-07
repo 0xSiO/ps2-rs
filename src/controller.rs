@@ -2,7 +2,7 @@ use x86_64::instructions::port::Port;
 
 use crate::{
     error::ControllerError,
-    flags::{Config, Input, Output, Status},
+    flags::{ControllerConfig, ControllerInput, ControllerOutput, ControllerStatus},
 };
 
 const DATA_PORT: u16 = 0x60;
@@ -59,8 +59,8 @@ impl Controller {
         self.use_interrupts = false;
     }
 
-    pub fn read_status(&mut self) -> Status {
-        Status::from_bits_truncate(unsafe { self.command_register.read() })
+    pub fn read_status(&mut self) -> ControllerStatus {
+        ControllerStatus::from_bits_truncate(unsafe { self.command_register.read() })
     }
 
     fn wait_for_read(&mut self) -> Result<()> {
@@ -69,7 +69,7 @@ impl Controller {
         }
 
         let mut timeout = TIMEOUT;
-        while !self.read_status().contains(Status::OUTPUT_FULL) && timeout > 0 {
+        while !self.read_status().contains(ControllerStatus::OUTPUT_FULL) && timeout > 0 {
             timeout -= 1;
         }
 
@@ -82,7 +82,7 @@ impl Controller {
 
     fn wait_for_write(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
-        while self.read_status().contains(Status::INPUT_FULL) && timeout > 0 {
+        while self.read_status().contains(ControllerStatus::INPUT_FULL) && timeout > 0 {
             timeout -= 1;
         }
 
@@ -130,8 +130,10 @@ impl Controller {
         self.write_data(data)
     }
 
-    pub fn read_config(&mut self) -> Result<Config> {
-        Ok(Config::from_bits_truncate(self.read_internal_ram(0)?))
+    pub fn read_config(&mut self) -> Result<ControllerConfig> {
+        Ok(ControllerConfig::from_bits_truncate(
+            self.read_internal_ram(0)?,
+        ))
     }
 
     pub fn disable_mouse(&mut self) -> Result<()> {
@@ -179,9 +181,9 @@ impl Controller {
         self.write_command(Command::EnableKeyboard)
     }
 
-    pub fn read_controller_input(&mut self) -> Result<Input> {
+    pub fn read_controller_input(&mut self) -> Result<ControllerInput> {
         self.write_command(Command::ReadControllerInput)?;
-        Ok(Input::from_bits_truncate(self.read_data()?))
+        Ok(ControllerInput::from_bits_truncate(self.read_data()?))
     }
 
     pub fn write_input_low_nibble_to_status(&mut self) -> Result<()> {
@@ -192,12 +194,12 @@ impl Controller {
         self.write_command(Command::WriteHighInputNibbleToStatus)
     }
 
-    pub fn read_controller_output(&mut self) -> Result<Output> {
+    pub fn read_controller_output(&mut self) -> Result<ControllerOutput> {
         self.write_command(Command::ReadControllerOutput)?;
-        Ok(Output::from_bits_truncate(self.read_data()?))
+        Ok(ControllerOutput::from_bits_truncate(self.read_data()?))
     }
 
-    pub fn write_controller_output(&mut self, output: Output) -> Result<()> {
+    pub fn write_controller_output(&mut self, output: ControllerOutput) -> Result<()> {
         self.write_command(Command::WriteControllerOutput)?;
         self.write_data(output.bits())
     }
