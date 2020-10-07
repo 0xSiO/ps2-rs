@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 bitflags! {
-    pub struct Status: u8 {
+    pub struct ControllerStatus: u8 {
         const OUTPUT_FULL        = 0b00000001;
         const INPUT_FULL         = 0b00000010;
         const SYSTEM_FLAG        = 0b00000100;
@@ -14,7 +14,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct Config: u8 {
+    pub struct ControllerConfig: u8 {
         const ENABLE_KEYBOARD_INTERRUPT = 0b00000001;
         const ENABLE_MOUSE_INTERRUPT    = 0b00000010;
         const SET_SYSTEM_FLAG           = 0b00000100;
@@ -25,7 +25,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct Input: u8 {
+    pub struct ControllerInput: u8 {
         const KEYBOARD_DATA        = 0b00000001;
         const MOUSE_DATA           = 0b00000010;
         const ENABLE_EXTRA_RAM     = 0b00010000;
@@ -36,7 +36,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct Output: u8 {
+    pub struct ControllerOutput: u8 {
         const SYSTEM_RESET       = 0b00000001;
         const A20_GATE           = 0b00000010;
         const MOUSE_DATA         = 0b00000100;
@@ -55,17 +55,17 @@ mod tests {
     #[test]
     fn undefined_bits_test() {
         // Undefined bits in config byte and input port default to 0
-        assert_eq!(Config::all().bits(), 0b01110111);
-        assert_eq!(Input::all().bits(), 0b11110011);
+        assert_eq!(ControllerConfig::all().bits(), 0b01110111);
+        assert_eq!(ControllerInput::all().bits(), 0b11110011);
     }
 
     #[test]
     fn handles_all_zeroes_test() {
         assert_eq!(
             (
-                Config::from_bits_truncate(0).bits(),
-                Input::from_bits_truncate(0).bits(),
-                Output::from_bits_truncate(0).bits()
+                ControllerConfig::from_bits_truncate(0).bits(),
+                ControllerInput::from_bits_truncate(0).bits(),
+                ControllerOutput::from_bits_truncate(0).bits()
             ),
             (0, 0, 0)
         );
