@@ -5,6 +5,7 @@
 //   http://www.s100computers.com/My%20System%20Pages/MSDOS%20Board/PC%20Keyboard.pdf
 
 mod controller;
+pub mod error;
 mod flags;
 mod response;
 
