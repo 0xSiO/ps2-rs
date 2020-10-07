@@ -69,21 +69,28 @@ impl Controller {
         self.write_command(0xa8);
     }
 
-    // TODO: Create test responses
-
-    pub fn test_mouse(&mut self) -> u8 {
+    pub fn test_mouse(&mut self) -> Result<(), u8> {
         self.write_command(0xa9);
-        self.read_data()
+        match self.read_data() {
+            0 => Ok(()),
+            err => Err(err),
+        }
     }
 
-    pub fn test_controller(&mut self) -> u8 {
+    pub fn test_controller(&mut self) -> Result<(), u8> {
         self.write_command(0xaa);
-        self.read_data()
+        match self.read_data() {
+            0x55 => Ok(()),
+            err => Err(err),
+        }
     }
 
-    pub fn test_keyboard(&mut self) -> u8 {
+    pub fn test_keyboard(&mut self) -> Result<(), u8> {
         self.write_command(0xab);
-        self.read_data()
+        match self.read_data() {
+            0 => Ok(()),
+            err => Err(err),
+        }
     }
 
     pub fn diagnostic_dump(&mut self) {
