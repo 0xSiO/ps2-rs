@@ -1,9 +1,6 @@
 use x86_64::instructions::port::Port;
 
-use crate::{
-    flags::{Config, Input, Output, Status},
-    response::Response,
-};
+use crate::flags::{Config, Input, Output, Status};
 
 const DATA_PORT: u16 = 0x60;
 const COMMAND_REGISTER: u16 = 0x64;
