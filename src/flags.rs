@@ -58,4 +58,16 @@ mod tests {
         assert_eq!(Config::all().bits(), 0b01110111);
         assert_eq!(Input::all().bits(), 0b11110011);
     }
+
+    #[test]
+    fn handles_all_zeroes_test() {
+        assert_eq!(
+            (
+                Config::from_bits_truncate(0).bits(),
+                Input::from_bits_truncate(0).bits(),
+                Output::from_bits_truncate(0).bits()
+            ),
+            (0, 0, 0)
+        );
+    }
 }

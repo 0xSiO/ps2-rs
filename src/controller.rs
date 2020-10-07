@@ -11,13 +11,15 @@ const COMMAND_REGISTER: u16 = 0x64;
 // TODO: Timeout for reads/writes
 
 pub struct Controller {
+    use_interrupts: bool,
     command_register: Port<u8>,
     data_port: Port<u8>,
 }
 
 impl Controller {
-    pub const fn new() -> Self {
+    pub const fn new(use_interrupts: bool) -> Self {
         Self {
+            use_interrupts,
             command_register: Port::new(COMMAND_REGISTER),
             data_port: Port::new(DATA_PORT),
         }
@@ -29,6 +31,9 @@ impl Controller {
     }
 
     fn read_data(&mut self) -> u8 {
+        if self.use_interrupts {
+            return 0;
+        }
         while !self.read_status().contains(Status::OUTPUT_FULL) {}
         unsafe { self.data_port.read() }
     }
