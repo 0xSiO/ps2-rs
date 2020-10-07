@@ -43,12 +43,20 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub const fn new(use_interrupts: bool) -> Self {
+    pub const fn new() -> Self {
         Self {
-            use_interrupts,
+            use_interrupts: false,
             command_register: Port::new(COMMAND_REGISTER),
             data_port: Port::new(DATA_PORT),
         }
+    }
+
+    pub fn enable_interrupts(&mut self) {
+        self.use_interrupts = true;
+    }
+
+    pub fn disable_interrupts(&mut self) {
+        self.use_interrupts = false;
     }
 
     pub fn read_status(&mut self) -> Status {
@@ -218,5 +226,11 @@ impl Controller {
             self.command_register.write(command as u8);
         }
         Ok(())
+    }
+}
+
+impl Default for Controller {
+    fn default() -> Self {
+        Self::new()
     }
 }
