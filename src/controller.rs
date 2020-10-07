@@ -140,4 +140,8 @@ impl Controller {
         self.write_command(0xd4);
         self.write_data(data);
     }
+
+    pub fn pulse_output_low_nibble(&mut self, data: u8) {
+        self.write_command(0xf0 | data);
+    }
 }
