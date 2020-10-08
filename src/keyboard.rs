@@ -130,8 +130,6 @@ impl Keyboard {
         self.write_command(Command::SetAllKeysMakeOnly, None)
     }
 
-    // TODO: Setting individual key settings might require multiple bytes
-
     pub fn set_key_typematic(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyTypematic, Some(scancode))
     }
