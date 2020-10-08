@@ -12,7 +12,6 @@ pub use self::{controller::Controller, keyboard::Keyboard};
 
 mod controller;
 mod keyboard;
-mod response;
 
 pub mod error;
 pub mod flags;
