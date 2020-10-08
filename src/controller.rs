@@ -34,7 +34,7 @@ pub(crate) enum Command {
 
 #[derive(Debug)]
 pub struct Controller {
-    use_interrupts: bool,
+    non_blocking_read: bool,
     command_register: Port<u8>,
     data_port: Port<u8>,
 }
@@ -42,18 +42,18 @@ pub struct Controller {
 impl Controller {
     pub const fn new() -> Self {
         Self {
-            use_interrupts: false,
+            non_blocking_read: false,
             command_register: Port::new(COMMAND_REGISTER),
             data_port: Port::new(DATA_PORT),
         }
     }
 
-    pub fn enable_interrupts(&mut self) {
-        self.use_interrupts = true;
+    pub fn disable_blocking_read(&mut self) {
+        self.non_blocking_read = true;
     }
 
-    pub fn disable_interrupts(&mut self) {
-        self.use_interrupts = false;
+    pub fn enable_blocking_read(&mut self) {
+        self.non_blocking_read = false;
     }
 
     pub fn read_status(&mut self) -> ControllerStatus {
@@ -61,8 +61,8 @@ impl Controller {
     }
 
     fn wait_for_read(&mut self) -> Result<()> {
-        if self.use_interrupts {
-            return Err(ControllerError::InterruptsEnabled);
+        if self.non_blocking_read {
+            return Err(ControllerError::WouldBlock);
         }
 
         let mut timeout = TIMEOUT;
