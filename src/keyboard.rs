@@ -42,12 +42,12 @@ impl Keyboard {
         }
     }
 
-    pub fn enable_interrupts(&mut self) {
-        self.controller.enable_interrupts();
+    pub fn disable_blocking_read(&mut self) {
+        self.controller.disable_blocking_read();
     }
 
-    pub fn disable_interrupts(&mut self) {
-        self.controller.disable_interrupts();
+    pub fn enable_blocking_read(&mut self) {
+        self.controller.enable_blocking_read();
     }
 
     fn check_response(&mut self) -> Result<()> {
