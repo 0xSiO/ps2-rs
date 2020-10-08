@@ -1,0 +1,11 @@
+language: rust
+rust:
+  - nightly
+
+script:
+  - cargo build --verbose --all
+  - cargo test --verbose --all
+  - cargo test --verbose --all -- --ignored
+
+jobs:
+  fast_finish: true
