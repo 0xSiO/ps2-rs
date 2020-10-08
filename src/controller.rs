@@ -10,7 +10,7 @@ type Result<T> = core::result::Result<T, ControllerError>;
 
 #[derive(Debug)]
 #[repr(u8)]
-enum Command {
+pub(crate) enum Command {
     ReadInternalRam = 0x20,
     WriteInternalRam = 0x60,
     DisableMouse = 0xa7,
@@ -90,17 +90,17 @@ impl Controller {
         }
     }
 
-    fn write_command(&mut self, command: Command) -> Result<()> {
+    pub(crate) fn write_command(&mut self, command: Command) -> Result<()> {
         self.wait_for_write()?;
         Ok(unsafe { self.command_register.write(command as u8) })
     }
 
-    fn read_data(&mut self) -> Result<u8> {
+    pub(crate) fn read_data(&mut self) -> Result<u8> {
         self.wait_for_read()?;
         Ok(unsafe { self.data_port.read() })
     }
 
-    fn write_data(&mut self, data: u8) -> Result<()> {
+    pub(crate) fn write_data(&mut self, data: u8) -> Result<()> {
         self.wait_for_write()?;
         Ok(unsafe { self.data_port.write(data) })
     }
