@@ -1,4 +1,12 @@
-use crate::{controller::Controller, error::KeyboardError, flags::KeyboardLeds};
+use crate::{
+    controller::Controller,
+    error::{ControllerError, KeyboardError},
+    flags::KeyboardLeds,
+};
+
+pub use self::keyboard_type::KeyboardType;
+
+mod keyboard_type;
 
 const BUFFER_OVERRUN: u8 = 0x00;
 const SELF_TEST_PASSED: u8 = 0xaa;
@@ -93,10 +101,24 @@ impl Keyboard {
         Ok(())
     }
 
-    pub fn identify_keyboard(&mut self) -> Result<()> {
-        self.write_command(Command::IdentifyKeyboard, None)?;
-        // TODO: Read ID bytes and return a device type
-        Ok(())
+    pub fn identify_keyboard(&mut self) -> Result<KeyboardType> {
+        // First check to see if the command was acknowledged
+        match self.write_command(Command::IdentifyKeyboard, None) {
+            Ok(()) => {}
+            // XT keyboards don't acknowledge this command
+            Err(KeyboardError::Resend) => return Ok(KeyboardType::XT),
+            Err(other) => return Err(other.into()),
+        }
+
+        // Now check for a second byte - AT keyboards won't give one
+        match self.controller.read_data() {
+            Ok(first_byte) => {
+                let second_byte = self.controller.read_data()?;
+                Ok(KeyboardType::from((first_byte, second_byte)))
+            }
+            Err(ControllerError::Timeout) => Ok(KeyboardType::ATWithTranslation),
+            Err(other) => return Err(other.into()),
+        }
     }
 
     pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: u8, delay: u8) -> Result<()> {
