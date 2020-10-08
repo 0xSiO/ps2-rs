@@ -83,8 +83,6 @@ impl Keyboard {
         }
     }
 
-    // TODO: Types to represent scancode sets? Using u8 is a little sloppy
-
     pub fn get_scancode_set(&mut self) -> Result<u8> {
         self.write_command(Command::GetOrSetScancode, Some(0))?;
         Ok(self.controller.read_data()?)
