@@ -48,6 +48,14 @@ bitflags! {
     }
 }
 
+bitflags! {
+    pub struct KeyboardLeds: u8 {
+        const SCROLL_LOCK = 0b001;
+        const NUM_LOCK    = 0b010;
+        const CAPS_LOCK   = 0b100;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
