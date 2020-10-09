@@ -129,10 +129,10 @@ impl Keyboard {
 
     pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: f64, delay: u16) -> Result<()> {
         if repeat_rate < 2.0 || repeat_rate > 30.0 {
-            // TODO: Invalid frequency
+            return Err(KeyboardError::InvalidTypematicFrequency(repeat_rate));
         }
         if !VALID_DELAYS.contains(&delay) {
-            // TODO: Invalid delay
+            return Err(KeyboardError::InvalidTypematicDelay(delay));
         }
 
         let scaled_rate: f64 = (30.0 - repeat_rate) / TYPEMATIC_RATE_SCALE_FACTOR;
