@@ -19,7 +19,3 @@ mod keyboard;
 
 pub mod error;
 pub mod flags;
-
-const DATA_PORT: u16 = 0x60;
-const COMMAND_REGISTER: u16 = 0x64;
-const TIMEOUT: u16 = 10_000;

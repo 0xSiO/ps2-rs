@@ -3,12 +3,14 @@ use x86_64::instructions::port::Port;
 use crate::{
     error::ControllerError,
     flags::{ControllerConfig, ControllerInput, ControllerOutput, ControllerStatus},
-    COMMAND_REGISTER, DATA_PORT, TIMEOUT,
 };
+
+const DATA_PORT: u16 = 0x60;
+const COMMAND_REGISTER: u16 = 0x64;
+const TIMEOUT: u16 = 10_000;
 
 type Result<T> = core::result::Result<T, ControllerError>;
 
-#[derive(Debug)]
 #[repr(u8)]
 pub(crate) enum Command {
     ReadInternalRam = 0x20,

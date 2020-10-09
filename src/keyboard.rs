@@ -45,6 +45,7 @@ enum Command {
     ResetAndSelfTest = 0xff,
 }
 
+#[derive(Debug)]
 pub struct Keyboard {
     controller: Controller,
 }
