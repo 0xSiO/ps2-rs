@@ -16,6 +16,12 @@ const SELF_TEST_FAILED: u8 = 0xfc;
 const RESEND: u8 = 0xfe;
 const KEY_DETECTION_ERROR: u8 = 0xff;
 
+// Scale is 0x00 (30 Hz) to 0x1f (2 Hz). I'm assuming it's linear, but I could be wrong.
+// For desired frequency f and scale factor s, the approximate byte needed is (30 - f) / s
+const TYPEMATIC_RATE_SCALE_FACTOR: f64 = 28.0 / 31.0;
+// Valid typematic delay values in milliseconds
+const VALID_DELAYS: [u16; 4] = [250, 500, 750, 1000];
+
 type Result<T> = core::result::Result<T, KeyboardError>;
 
 #[repr(u8)]
@@ -121,9 +127,25 @@ impl Keyboard {
         }
     }
 
-    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: u8, delay: u8) -> Result<()> {
-        // TODO: Maybe calculate frequencies and use an enum
-        Ok(())
+    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: f64, delay: u16) -> Result<()> {
+        if repeat_rate < 2.0 || repeat_rate > 30.0 {
+            // TODO: Invalid frequency
+        }
+        if !VALID_DELAYS.contains(&delay) {
+            // TODO: Invalid delay
+        }
+
+        let scaled_rate: f64 = (30.0 - repeat_rate) / TYPEMATIC_RATE_SCALE_FACTOR;
+        let encoded_rate = 0b00011111 & (libm::round(scaled_rate) as u8);
+
+        // Ok to unwrap since we already checked for existence in VALID_DELAYS. Also safe
+        // to cast to u8 since VALID_DELAYS has only 4 elements
+        let encoded_delay = VALID_DELAYS.iter().position(|&n| n == delay).unwrap() as u8;
+
+        self.write_command(
+            Command::SetTypematicRateAndDelay,
+            Some(encoded_delay << 5 | encoded_rate),
+        )
     }
 
     pub fn enable_scanning(&mut self) -> Result<()> {
@@ -148,6 +170,10 @@ impl Keyboard {
 
     pub fn set_all_keys_make_only(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysMakeOnly, None)
+    }
+
+    pub fn set_all_keys_typematic_make_break(&mut self) -> Result<()> {
+        self.write_command(Command::SetAllKeysTypematicAndMakeBreak, None)
     }
 
     pub fn set_key_typematic(&mut self, scancode: u8) -> Result<()> {
