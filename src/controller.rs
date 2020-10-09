@@ -167,9 +167,14 @@ impl Controller {
         }
     }
 
-    pub fn diagnostic_dump(&mut self) -> Result<()> {
-        self.write_command(Command::DiagnosticDump)
-        // TODO: return array of all bytes
+    // TODO: Test this, eventually. I wasn't able to get it working with any of my devices
+    pub fn diagnostic_dump(&mut self) -> Result<[u8; 32]> {
+        self.write_command(Command::DiagnosticDump)?;
+        let mut result = [0; 32];
+        for byte in result.iter_mut() {
+            *byte = self.read_data()?;
+        }
+        Ok(result)
     }
 
     pub fn disable_keyboard(&mut self) -> Result<()> {
