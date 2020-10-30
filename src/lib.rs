@@ -26,3 +26,6 @@ const COMMAND_ACKNOWLEDGED: u8 = 0xfa;
 const SELF_TEST_PASSED: u8 = 0xaa;
 const SELF_TEST_FAILED: u8 = 0xfc;
 const RESEND: u8 = 0xfe;
+
+// TODO: Make device structs hold a spinning_top::Spinlock<Controller> to avoid race
+//       conditions
