@@ -58,11 +58,11 @@ impl Controller {
         self.non_blocking_read = false;
     }
 
-    pub fn read_status(&mut self) -> ControllerStatus {
-        ControllerStatus::from_bits_truncate(unsafe { self.command_register.read() })
+    pub unsafe fn read_status(&mut self) -> ControllerStatus {
+        ControllerStatus::from_bits_truncate(self.command_register.read())
     }
 
-    fn wait_for_read(&mut self) -> Result<()> {
+    unsafe fn wait_for_read(&mut self) -> Result<()> {
         if self.non_blocking_read {
             return Err(ControllerError::WouldBlock);
         }
@@ -79,7 +79,7 @@ impl Controller {
         }
     }
 
-    fn wait_for_write(&mut self) -> Result<()> {
+    unsafe fn wait_for_write(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
         while self.read_status().contains(ControllerStatus::INPUT_FULL) && timeout > 0 {
             timeout -= 1;
@@ -92,58 +92,54 @@ impl Controller {
         }
     }
 
-    pub(crate) fn write_command(&mut self, command: Command) -> Result<()> {
+    pub(crate) unsafe fn write_command(&mut self, command: Command) -> Result<()> {
         self.wait_for_write()?;
-        Ok(unsafe { self.command_register.write(command as u8) })
+        Ok(self.command_register.write(command as u8))
     }
 
-    pub(crate) fn read_data(&mut self) -> Result<u8> {
+    pub(crate) unsafe fn read_data(&mut self) -> Result<u8> {
         self.wait_for_read()?;
-        Ok(unsafe { self.data_port.read() })
+        Ok(self.data_port.read())
     }
 
-    pub(crate) fn write_data(&mut self, data: u8) -> Result<()> {
+    pub(crate) unsafe fn write_data(&mut self, data: u8) -> Result<()> {
         self.wait_for_write()?;
-        Ok(unsafe { self.data_port.write(data) })
+        Ok(self.data_port.write(data))
     }
 
-    pub fn read_internal_ram(&mut self, byte_number: u8) -> Result<u8> {
+    pub unsafe fn read_internal_ram(&mut self, byte_number: u8) -> Result<u8> {
         // Limit from 0 - 31, start command byte at 0x20
         let command = Command::ReadInternalRam as u8 | byte_number & 0x1f;
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
-        unsafe {
-            self.command_register.write(command as u8);
-        }
+        self.command_register.write(command as u8);
         self.read_data()
     }
 
-    pub fn write_internal_ram(&mut self, byte_number: u8, data: u8) -> Result<()> {
+    pub unsafe fn write_internal_ram(&mut self, byte_number: u8, data: u8) -> Result<()> {
         // Limit from 0 - 31, start command byte at 0x60
         let command = Command::WriteInternalRam as u8 | byte_number & 0x1f;
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
-        unsafe {
-            self.command_register.write(command as u8);
-        }
+        self.command_register.write(command as u8);
         self.write_data(data)
     }
 
-    pub fn read_config(&mut self) -> Result<ControllerConfig> {
+    pub unsafe fn read_config(&mut self) -> Result<ControllerConfig> {
         Ok(ControllerConfig::from_bits_truncate(
             self.read_internal_ram(0)?,
         ))
     }
 
-    pub fn disable_mouse(&mut self) -> Result<()> {
+    pub unsafe fn disable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::DisableMouse)
     }
 
-    pub fn enable_mouse(&mut self) -> Result<()> {
+    pub unsafe fn enable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::EnableMouse)
     }
 
-    pub fn test_mouse(&mut self) -> Result<()> {
+    pub unsafe fn test_mouse(&mut self) -> Result<()> {
         self.write_command(Command::TestMouse)?;
         match self.read_data()? {
             0x00 => Ok(()),
@@ -151,7 +147,7 @@ impl Controller {
         }
     }
 
-    pub fn test_controller(&mut self) -> Result<()> {
+    pub unsafe fn test_controller(&mut self) -> Result<()> {
         self.write_command(Command::TestController)?;
         match self.read_data()? {
             0x55 => Ok(()),
@@ -159,7 +155,7 @@ impl Controller {
         }
     }
 
-    pub fn test_keyboard(&mut self) -> Result<()> {
+    pub unsafe fn test_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::TestKeyboard)?;
         match self.read_data()? {
             0x00 => Ok(()),
@@ -168,7 +164,7 @@ impl Controller {
     }
 
     // TODO: Test this, eventually. I wasn't able to get it working with any of my devices
-    pub fn diagnostic_dump(&mut self) -> Result<[u8; 32]> {
+    pub unsafe fn diagnostic_dump(&mut self) -> Result<[u8; 32]> {
         self.write_command(Command::DiagnosticDump)?;
         let mut result = [0; 32];
         for byte in result.iter_mut() {
@@ -177,60 +173,58 @@ impl Controller {
         Ok(result)
     }
 
-    pub fn disable_keyboard(&mut self) -> Result<()> {
+    pub unsafe fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
-    pub fn enable_keyboard(&mut self) -> Result<()> {
+    pub unsafe fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
 
-    pub fn read_controller_input(&mut self) -> Result<ControllerInput> {
+    pub unsafe fn read_controller_input(&mut self) -> Result<ControllerInput> {
         self.write_command(Command::ReadControllerInput)?;
         Ok(ControllerInput::from_bits_truncate(self.read_data()?))
     }
 
-    pub fn write_input_low_nibble_to_status(&mut self) -> Result<()> {
+    pub unsafe fn write_input_low_nibble_to_status(&mut self) -> Result<()> {
         self.write_command(Command::WriteLowInputNibbleToStatus)
     }
 
-    pub fn write_input_high_nibble_to_status(&mut self) -> Result<()> {
+    pub unsafe fn write_input_high_nibble_to_status(&mut self) -> Result<()> {
         self.write_command(Command::WriteHighInputNibbleToStatus)
     }
 
-    pub fn read_controller_output(&mut self) -> Result<ControllerOutput> {
+    pub unsafe fn read_controller_output(&mut self) -> Result<ControllerOutput> {
         self.write_command(Command::ReadControllerOutput)?;
         Ok(ControllerOutput::from_bits_truncate(self.read_data()?))
     }
 
-    pub fn write_controller_output(&mut self, output: ControllerOutput) -> Result<()> {
+    pub unsafe fn write_controller_output(&mut self, output: ControllerOutput) -> Result<()> {
         self.write_command(Command::WriteControllerOutput)?;
         self.write_data(output.bits())
     }
 
-    pub fn write_keyboard_buffer(&mut self, data: u8) -> Result<()> {
+    pub unsafe fn write_keyboard_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteKeyboardBuffer)?;
         self.write_data(data)
     }
 
-    pub fn write_mouse_buffer(&mut self, data: u8) -> Result<()> {
+    pub unsafe fn write_mouse_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouseBuffer)?;
         self.write_data(data)
     }
 
-    pub fn write_mouse(&mut self, data: u8) -> Result<()> {
+    pub unsafe fn write_mouse(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouse)?;
         self.write_data(data)
     }
 
-    pub fn pulse_output_low_nibble(&mut self, data: u8) -> Result<()> {
+    pub unsafe fn pulse_output_low_nibble(&mut self, data: u8) -> Result<()> {
         // Make the high nibble all 1's
         let command = Command::PulseOutput as u8 | data;
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
-        unsafe {
-            self.command_register.write(command as u8);
-        }
+        self.command_register.write(command as u8);
         Ok(())
     }
 }

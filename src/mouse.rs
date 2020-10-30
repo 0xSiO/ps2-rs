@@ -48,7 +48,7 @@ impl Mouse {
         self.controller.enable_blocking_read();
     }
 
-    fn check_response(&mut self) -> Result<()> {
+    unsafe fn check_response(&mut self) -> Result<()> {
         match self.controller.read_data()? {
             COMMAND_ACKNOWLEDGED => Ok(()),
             RESEND => Err(MouseError::Resend),
@@ -56,7 +56,7 @@ impl Mouse {
         }
     }
 
-    fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
+    unsafe fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
         self.controller.write_mouse(command as u8)?;
         self.check_response()?;
         if let Some(data) = data {
@@ -66,28 +66,28 @@ impl Mouse {
         Ok(())
     }
 
-    pub fn set_scaling_one_to_one(&mut self) -> Result<()> {
+    pub unsafe fn set_scaling_one_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling1To1, None)
     }
 
-    pub fn set_scaling_two_to_one(&mut self) -> Result<()> {
+    pub unsafe fn set_scaling_two_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling2To1, None)
     }
 
-    pub fn set_resolution(&mut self, resolution: u8) -> Result<()> {
+    pub unsafe fn set_resolution(&mut self, resolution: u8) -> Result<()> {
         if !VALID_RESOLUTIONS.contains(&resolution) {
             return Err(MouseError::InvalidResolution(resolution));
         }
         self.write_command(Command::SetResolution, Some(resolution))
     }
 
-    pub fn resend_last_byte(&mut self) -> Result<u8> {
+    pub unsafe fn resend_last_byte(&mut self) -> Result<u8> {
         self.controller.write_mouse(Command::ResendLastByte as u8)?;
         // TODO: 0xfe won't ever be sent in response. Check if this is true for keyboard too
         Ok(self.controller.read_data()?)
     }
 
-    pub fn reset_and_self_test(&mut self) -> Result<()> {
+    pub unsafe fn reset_and_self_test(&mut self) -> Result<()> {
         self.write_command(Command::ResetAndSelfTest, None)?;
         let result = match self.controller.read_data()? {
             SELF_TEST_PASSED => Ok(()),
