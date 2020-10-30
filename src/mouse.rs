@@ -7,22 +7,22 @@ type Result<T> = core::result::Result<T, MouseError>;
 
 #[repr(u8)]
 enum Command {
-    Reset = 0xff,
-    ResendLastByte = 0xfe,
-    SetDefaults = 0xf6,
-    DisableDataReporting = 0xf5,
-    EnableDataReporting = 0xf4,
-    SetSampleRate = 0xf3,
-    GetDeviceID = 0xf2,
-    SetRemoteMode = 0xf0,
-    SetWrapMode = 0xee,
-    ResetWrapMode = 0xec,
-    ReadData = 0xeb,
-    SetStreamMode = 0xea,
-    StatusRequest = 0xe9,
-    SetResolution = 0xe8,
-    SetScaling2To1 = 0xe7,
     SetScaling1To1 = 0xe6,
+    SetScaling2To1 = 0xe7,
+    SetResolution = 0xe8,
+    StatusRequest = 0xe9,
+    SetStreamMode = 0xea,
+    ReadData = 0xeb,
+    ResetWrapMode = 0xec,
+    SetWrapMode = 0xee,
+    SetRemoteMode = 0xf0,
+    GetDeviceID = 0xf2,
+    SetSampleRate = 0xf3,
+    EnableDataReporting = 0xf4,
+    DisableDataReporting = 0xf5,
+    SetDefaults = 0xf6,
+    ResendLastByte = 0xfe,
+    ResetAndSelfTest = 0xff,
 }
 
 #[derive(Debug)]
@@ -54,7 +54,7 @@ impl Mouse {
     }
 
     fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
-        self.controller.write_mouse(command as u8);
+        self.controller.write_mouse(command as u8)?;
         self.check_response()?;
         if let Some(data) = data {
             self.controller.write_data(data as u8)?;
@@ -70,13 +70,15 @@ impl Mouse {
     }
 
     pub fn reset_and_self_test(&mut self) -> Result<()> {
-        self.controller.write_mouse(Command::Reset as u8)?;
-        match self.controller.read_data()? {
+        self.write_command(Command::ResetAndSelfTest, None)?;
+        let result = match self.controller.read_data()? {
             SELF_TEST_PASSED => Ok(()),
             SELF_TEST_FAILED => Err(MouseError::SelfTestFailed),
             RESEND => Err(MouseError::Resend),
             other => Err(MouseError::InvalidResponse(other)),
-        }
+        };
+        let _device_id = self.controller.read_data()?;
+        result
     }
 }
 
