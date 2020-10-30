@@ -3,6 +3,9 @@ use crate::{
     SELF_TEST_PASSED,
 };
 
+// Valid resolution values in counts per mm
+const VALID_RESOLUTIONS: [u8; 4] = [1, 2, 4, 8];
+
 type Result<T> = core::result::Result<T, MouseError>;
 
 #[repr(u8)]
@@ -61,6 +64,21 @@ impl Mouse {
             self.check_response()?;
         }
         Ok(())
+    }
+
+    pub fn set_scaling_one_to_one(&mut self) -> Result<()> {
+        self.write_command(Command::SetScaling1To1, None)
+    }
+
+    pub fn set_scaling_two_to_one(&mut self) -> Result<()> {
+        self.write_command(Command::SetScaling2To1, None)
+    }
+
+    pub fn set_resolution(&mut self, resolution: u8) -> Result<()> {
+        if !VALID_RESOLUTIONS.contains(&resolution) {
+            return Err(MouseError::InvalidResolution(resolution));
+        }
+        self.write_command(Command::SetResolution, Some(resolution))
     }
 
     pub fn resend_last_byte(&mut self) -> Result<u8> {
