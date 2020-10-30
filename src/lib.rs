@@ -12,10 +12,17 @@
 pub use self::{
     controller::Controller,
     keyboard::{Keyboard, KeyboardType},
+    mouse::Mouse,
 };
 
 mod controller;
 mod keyboard;
+mod mouse;
 
 pub mod error;
 pub mod flags;
+
+const COMMAND_ACKNOWLEDGED: u8 = 0xfa;
+const SELF_TEST_PASSED: u8 = 0xaa;
+const SELF_TEST_FAILED: u8 = 0xfc;
+const RESEND: u8 = 0xfe;

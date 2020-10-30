@@ -17,8 +17,22 @@ pub enum KeyboardError {
     ControllerError(ControllerError),
 }
 
+#[derive(Debug)]
+pub enum MouseError {
+    SelfTestFailed,
+    Resend,
+    InvalidResponse(u8),
+    ControllerError(ControllerError),
+}
+
 impl From<ControllerError> for KeyboardError {
     fn from(err: ControllerError) -> Self {
         KeyboardError::ControllerError(err)
+    }
+}
+
+impl From<ControllerError> for MouseError {
+    fn from(err: ControllerError) -> Self {
+        MouseError::ControllerError(err)
     }
 }
