@@ -2,6 +2,7 @@ use crate::{
     controller::Controller,
     error::{ControllerError, KeyboardError},
     flags::KeyboardLeds,
+    COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
 pub use self::keyboard_type::KeyboardType;
@@ -9,11 +10,7 @@ pub use self::keyboard_type::KeyboardType;
 mod keyboard_type;
 
 const BUFFER_OVERRUN: u8 = 0x00;
-const SELF_TEST_PASSED: u8 = 0xaa;
 const ECHO: u8 = 0xee;
-const COMMAND_ACKNOWLEDGED: u8 = 0xfa;
-const SELF_TEST_FAILED: u8 = 0xfc;
-const RESEND: u8 = 0xfe;
 const KEY_DETECTION_ERROR: u8 = 0xff;
 
 // Scale is 0x00 (30 Hz) to 0x1f (2 Hz). I'm assuming it's linear, but I could be wrong.
