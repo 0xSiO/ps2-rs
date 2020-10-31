@@ -43,15 +43,14 @@ enum Command {
 }
 
 #[derive(Debug)]
-pub struct Keyboard {
-    controller: Controller,
+pub struct Keyboard<'c> {
+    controller: &'c mut Controller,
 }
 
-impl Keyboard {
-    pub const fn new() -> Self {
-        Self {
-            controller: Controller::new(),
-        }
+impl<'c> Keyboard<'c> {
+    // TODO: Read more about const_mut_refs feature if we want this function to be const
+    pub(crate) fn new(controller: &'c mut Controller) -> Self {
+        Self { controller }
     }
 
     pub fn disable_blocking_read(&mut self) {
@@ -62,7 +61,7 @@ impl Keyboard {
         self.controller.enable_blocking_read();
     }
 
-    unsafe fn check_response(&mut self) -> Result<()> {
+    fn check_response(&mut self) -> Result<()> {
         match self.controller.read_data()? {
             BUFFER_OVERRUN => Err(KeyboardError::KeyDetectionError),
             COMMAND_ACKNOWLEDGED => Ok(()),
@@ -72,7 +71,7 @@ impl Keyboard {
         }
     }
 
-    unsafe fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
+    fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
         self.controller.write_data(command as u8)?;
         self.check_response()?;
         if let Some(data) = data {
@@ -82,11 +81,11 @@ impl Keyboard {
         Ok(())
     }
 
-    pub unsafe fn set_leds(&mut self, leds: KeyboardLeds) -> Result<()> {
+    pub fn set_leds(&mut self, leds: KeyboardLeds) -> Result<()> {
         self.write_command(Command::SetLeds, Some(leds.bits()))
     }
 
-    pub unsafe fn echo(&mut self) -> Result<()> {
+    pub fn echo(&mut self) -> Result<()> {
         self.controller.write_data(Command::Echo as u8)?;
         match self.controller.read_data()? {
             ECHO => Ok(()),
@@ -95,17 +94,17 @@ impl Keyboard {
         }
     }
 
-    pub unsafe fn get_scancode_set(&mut self) -> Result<u8> {
+    pub fn get_scancode_set(&mut self) -> Result<u8> {
         self.write_command(Command::GetOrSetScancode, Some(0))?;
         Ok(self.controller.read_data()?)
     }
 
-    pub unsafe fn set_scancode_set(&mut self, scancode_set: u8) -> Result<()> {
+    pub fn set_scancode_set(&mut self, scancode_set: u8) -> Result<()> {
         self.write_command(Command::GetOrSetScancode, Some(scancode_set))?;
         Ok(())
     }
 
-    pub unsafe fn identify_keyboard(&mut self) -> Result<KeyboardType> {
+    pub fn identify_keyboard(&mut self) -> Result<KeyboardType> {
         // First check to see if the command was acknowledged
         match self.write_command(Command::IdentifyKeyboard, None) {
             Ok(()) => {}
@@ -125,11 +124,7 @@ impl Keyboard {
         }
     }
 
-    pub unsafe fn set_typematic_rate_and_delay(
-        &mut self,
-        repeat_rate: f64,
-        delay: u16,
-    ) -> Result<()> {
+    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: f64, delay: u16) -> Result<()> {
         if repeat_rate < 2.0 || repeat_rate > 30.0 {
             return Err(KeyboardError::InvalidTypematicFrequency(repeat_rate));
         }
@@ -150,47 +145,47 @@ impl Keyboard {
         )
     }
 
-    pub unsafe fn enable_scanning(&mut self) -> Result<()> {
+    pub fn enable_scanning(&mut self) -> Result<()> {
         self.write_command(Command::EnableScanning, None)
     }
 
-    pub unsafe fn disable_scanning(&mut self) -> Result<()> {
+    pub fn disable_scanning(&mut self) -> Result<()> {
         self.write_command(Command::DisableScanning, None)
     }
 
-    pub unsafe fn set_defaults(&mut self) -> Result<()> {
+    pub fn set_defaults(&mut self) -> Result<()> {
         self.write_command(Command::SetDefaults, None)
     }
 
-    pub unsafe fn set_all_keys_typematic(&mut self) -> Result<()> {
+    pub fn set_all_keys_typematic(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysTypematic, None)
     }
 
-    pub unsafe fn set_all_keys_make_break(&mut self) -> Result<()> {
+    pub fn set_all_keys_make_break(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysMakeBreak, None)
     }
 
-    pub unsafe fn set_all_keys_make_only(&mut self) -> Result<()> {
+    pub fn set_all_keys_make_only(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysMakeOnly, None)
     }
 
-    pub unsafe fn set_all_keys_typematic_make_break(&mut self) -> Result<()> {
+    pub fn set_all_keys_typematic_make_break(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysTypematicAndMakeBreak, None)
     }
 
-    pub unsafe fn set_key_typematic(&mut self, scancode: u8) -> Result<()> {
+    pub fn set_key_typematic(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyTypematic, Some(scancode))
     }
 
-    pub unsafe fn set_key_make_break(&mut self, scancode: u8) -> Result<()> {
+    pub fn set_key_make_break(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyMakeBreak, Some(scancode))
     }
 
-    pub unsafe fn set_key_make_only(&mut self, scancode: u8) -> Result<()> {
+    pub fn set_key_make_only(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyMakeOnly, Some(scancode))
     }
 
-    pub unsafe fn resend_last_byte(&mut self) -> Result<u8> {
+    pub fn resend_last_byte(&mut self) -> Result<u8> {
         self.controller.write_data(Command::ResendLastByte as u8)?;
         match self.controller.read_data()? {
             RESEND => Err(KeyboardError::Resend),
@@ -198,7 +193,7 @@ impl Keyboard {
         }
     }
 
-    pub unsafe fn reset_and_self_test(&mut self) -> Result<()> {
+    pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.controller
             .write_data(Command::ResetAndSelfTest as u8)?;
         match self.controller.read_data()? {
@@ -207,11 +202,5 @@ impl Keyboard {
             RESEND => Err(KeyboardError::Resend),
             other => Err(KeyboardError::InvalidResponse(other)),
         }
-    }
-}
-
-impl Default for Keyboard {
-    fn default() -> Self {
-        Self::new()
     }
 }

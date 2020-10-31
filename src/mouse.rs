@@ -51,16 +51,15 @@ impl TryFrom<u8> for MouseResolution {
 }
 
 #[derive(Debug)]
-pub struct Mouse {
-    controller: Controller,
+pub struct Mouse<'c> {
+    controller: &'c mut Controller,
 }
 
 // TODO: Support Intellimouse extensions
-impl Mouse {
-    pub const fn new() -> Self {
-        Self {
-            controller: Controller::new(),
-        }
+impl<'c> Mouse<'c> {
+    // TODO: Read more about const_mut_refs feature if we want this function to be const
+    pub(crate) fn new(controller: &'c mut Controller) -> Self {
+        Self { controller }
     }
 
     pub fn disable_blocking_read(&mut self) {
@@ -71,7 +70,7 @@ impl Mouse {
         self.controller.enable_blocking_read();
     }
 
-    unsafe fn check_response(&mut self) -> Result<()> {
+    fn check_response(&mut self) -> Result<()> {
         match self.controller.read_data()? {
             COMMAND_ACKNOWLEDGED => Ok(()),
             RESEND => Err(MouseError::Resend),
@@ -79,7 +78,7 @@ impl Mouse {
         }
     }
 
-    unsafe fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
+    fn write_command(&mut self, command: Command, data: Option<u8>) -> Result<()> {
         self.controller.write_mouse(command as u8)?;
         self.check_response()?;
         if let Some(data) = data {
@@ -89,19 +88,19 @@ impl Mouse {
         Ok(())
     }
 
-    pub unsafe fn set_scaling_one_to_one(&mut self) -> Result<()> {
+    pub fn set_scaling_one_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling1To1, None)
     }
 
-    pub unsafe fn set_scaling_two_to_one(&mut self) -> Result<()> {
+    pub fn set_scaling_two_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling2To1, None)
     }
 
-    pub unsafe fn set_resolution(&mut self, resolution: MouseResolution) -> Result<()> {
+    pub fn set_resolution(&mut self, resolution: MouseResolution) -> Result<()> {
         self.write_command(Command::SetResolution, Some(resolution as u8))
     }
 
-    pub unsafe fn request_status(&mut self) -> Result<(MouseStatus, MouseResolution, u8)> {
+    pub fn request_status(&mut self) -> Result<(MouseStatus, MouseResolution, u8)> {
         self.write_command(Command::StatusRequest, None)?;
         let status = MouseStatus::from_bits_truncate(self.controller.read_data()?);
         let resolution = MouseResolution::try_from(self.controller.read_data()?)?;
@@ -109,13 +108,13 @@ impl Mouse {
         Ok((status, resolution, sample_rate))
     }
 
-    pub unsafe fn resend_last_byte(&mut self) -> Result<u8> {
+    pub fn resend_last_byte(&mut self) -> Result<u8> {
         self.controller.write_mouse(Command::ResendLastByte as u8)?;
         // TODO: 0xfe won't ever be sent in response. Check if this is true for keyboard too
         Ok(self.controller.read_data()?)
     }
 
-    pub unsafe fn reset_and_self_test(&mut self) -> Result<()> {
+    pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.write_command(Command::ResetAndSelfTest, None)?;
         let result = match self.controller.read_data()? {
             SELF_TEST_PASSED => Ok(()),
@@ -125,11 +124,5 @@ impl Mouse {
         };
         let _device_id = self.controller.read_data()?;
         result
-    }
-}
-
-impl Default for Mouse {
-    fn default() -> Self {
-        Self::new()
     }
 }
