@@ -12,7 +12,7 @@
 pub use self::{
     controller::Controller,
     keyboard::{Keyboard, KeyboardType},
-    mouse::Mouse,
+    mouse::{Mouse, MouseResolution},
 };
 
 mod controller;

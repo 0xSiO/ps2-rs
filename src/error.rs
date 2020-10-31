@@ -22,6 +22,7 @@ pub enum MouseError {
     SelfTestFailed,
     Resend,
     InvalidResponse(u8),
+    InvalidResolution(u8),
     ControllerError(ControllerError),
 }
 

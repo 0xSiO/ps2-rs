@@ -1,10 +1,9 @@
+use core::convert::TryFrom;
+
 use crate::{
     controller::Controller, error::MouseError, flags::MouseStatus, COMMAND_ACKNOWLEDGED, RESEND,
     SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
-
-// Valid resolution values in counts per mm
-const VALID_RESOLUTIONS: [u8; 4] = [1, 2, 4, 8];
 
 type Result<T> = core::result::Result<T, MouseError>;
 
@@ -29,11 +28,26 @@ enum Command {
 }
 
 #[repr(u8)]
-pub enum Resolution {
+pub enum MouseResolution {
     OneCountPerMM = 0x00,
     TwoCountPerMM = 0x01,
     FourCountPerMM = 0x02,
     EightCountPerMM = 0x03,
+}
+
+impl TryFrom<u8> for MouseResolution {
+    type Error = MouseError;
+
+    fn try_from(value: u8) -> Result<Self> {
+        use MouseResolution::*;
+        match value {
+            0x00 => Ok(OneCountPerMM),
+            0x01 => Ok(TwoCountPerMM),
+            0x02 => Ok(FourCountPerMM),
+            0x03 => Ok(EightCountPerMM),
+            other => Err(MouseError::InvalidResolution(other)),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -83,15 +97,14 @@ impl Mouse {
         self.write_command(Command::SetScaling2To1, None)
     }
 
-    pub unsafe fn set_resolution(&mut self, resolution: Resolution) -> Result<()> {
+    pub unsafe fn set_resolution(&mut self, resolution: MouseResolution) -> Result<()> {
         self.write_command(Command::SetResolution, Some(resolution as u8))
     }
 
-    pub unsafe fn request_status(&mut self) -> Result<(MouseStatus, u8, u8)> {
+    pub unsafe fn request_status(&mut self) -> Result<(MouseStatus, MouseResolution, u8)> {
         self.write_command(Command::StatusRequest, None)?;
         let status = MouseStatus::from_bits_truncate(self.controller.read_data()?);
-        // TODO: Parse this into an enum variant
-        let resolution = self.controller.read_data()?;
+        let resolution = MouseResolution::try_from(self.controller.read_data()?)?;
         let sample_rate = self.controller.read_data()?;
         Ok((status, resolution, sample_rate))
     }
