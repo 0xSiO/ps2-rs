@@ -7,6 +7,11 @@ use crate::{
     COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
+pub use self::{mouse_resolution::MouseResolution, mouse_type::MouseType};
+
+mod mouse_resolution;
+mod mouse_type;
+
 type Result<T> = core::result::Result<T, MouseError>;
 
 #[repr(u8)]
@@ -27,29 +32,6 @@ enum Command {
     SetDefaults = 0xf6,
     ResendLastByte = 0xfe,
     ResetAndSelfTest = 0xff,
-}
-
-#[repr(u8)]
-pub enum MouseResolution {
-    OneCountPerMM = 0x00,
-    TwoCountPerMM = 0x01,
-    FourCountPerMM = 0x02,
-    EightCountPerMM = 0x03,
-}
-
-impl TryFrom<u8> for MouseResolution {
-    type Error = MouseError;
-
-    fn try_from(value: u8) -> Result<Self> {
-        use MouseResolution::*;
-        match value {
-            0x00 => Ok(OneCountPerMM),
-            0x01 => Ok(TwoCountPerMM),
-            0x02 => Ok(FourCountPerMM),
-            0x03 => Ok(EightCountPerMM),
-            other => Err(MouseError::InvalidResolution(other)),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -135,10 +117,9 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetRemoteMode, None)
     }
 
-    // TODO: Return MouseType enum
-    pub fn get_device_id(&mut self) -> Result<u8> {
+    pub fn get_device_id(&mut self) -> Result<MouseType> {
         self.write_command(Command::GetDeviceID, None)?;
-        Ok(self.controller.read_data()?)
+        Ok(MouseType::from(self.controller.read_data()?))
     }
 
     // TODO: Valid sample rates are 10, 20, 40, 60, 80, 100, and 200 samples/sec
