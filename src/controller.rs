@@ -54,11 +54,11 @@ impl Controller {
         }
     }
 
-    pub fn keyboard(&mut self) -> Keyboard {
+    pub const fn keyboard(&mut self) -> Keyboard {
         Keyboard::new(self)
     }
 
-    pub fn mouse(&mut self) -> Mouse {
+    pub const fn mouse(&mut self) -> Mouse {
         Mouse::new(self)
     }
 

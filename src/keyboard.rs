@@ -48,8 +48,7 @@ pub struct Keyboard<'c> {
 }
 
 impl<'c> Keyboard<'c> {
-    // TODO: Read more about const_mut_refs feature if we want this function to be const
-    pub(crate) fn new(controller: &'c mut Controller) -> Self {
+    pub(crate) const fn new(controller: &'c mut Controller) -> Self {
         Self { controller }
     }
 
