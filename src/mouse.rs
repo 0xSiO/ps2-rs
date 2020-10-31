@@ -30,7 +30,7 @@ enum Command {
     EnableDataReporting = 0xf4,
     DisableDataReporting = 0xf5,
     SetDefaults = 0xf6,
-    ResendLastByte = 0xfe,
+    ResendLastPacket = 0xfe,
     ResetAndSelfTest = 0xff,
 }
 
@@ -163,10 +163,11 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetDefaults, None)
     }
 
-    pub fn resend_last_byte(&mut self) -> Result<u8> {
-        self.controller.write_mouse(Command::ResendLastByte as u8)?;
-        // TODO: 0xfe won't ever be sent in response. Check if this is true for keyboard too
-        Ok(self.controller.read_data()?)
+    pub fn resend_last_packet(&mut self) -> Result<()> {
+        // A packet can be one or more bytes, so let the user consume those
+        Ok(self
+            .controller
+            .write_mouse(Command::ResendLastPacket as u8)?)
     }
 
     pub fn reset_and_self_test(&mut self) -> Result<()> {
