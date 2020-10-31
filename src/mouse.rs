@@ -1,5 +1,3 @@
-use core::convert::TryFrom;
-
 use crate::{
     controller::Controller,
     error::MouseError,
@@ -7,10 +5,12 @@ use crate::{
     COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
-pub use self::{mouse_resolution::MouseResolution, mouse_type::MouseType};
+pub use self::mouse_type::MouseType;
 
-mod mouse_resolution;
 mod mouse_type;
+
+const VALID_RESOLUTIONS: [u8; 4] = [1, 2, 4, 8];
+const VALID_SAMPLE_RATES: [u8; 7] = [10, 20, 40, 60, 80, 100, 200];
 
 type Result<T> = core::result::Result<T, MouseError>;
 
@@ -80,15 +80,30 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetScaling2To1, None)
     }
 
-    pub fn set_resolution(&mut self, resolution: MouseResolution) -> Result<()> {
-        self.write_command(Command::SetResolution, Some(resolution as u8))
+    pub fn set_resolution(&mut self, resolution: u8) -> Result<()> {
+        if !VALID_RESOLUTIONS.contains(&resolution) {
+            return Err(MouseError::InvalidResolution(resolution));
+        }
+        // Ok to unwrap since we already checked for existence in VALID_RESOLUTIONS.
+        // Also safe to cast to u8 since VALID_RESOLUTIONS has only 4 elements
+        let resolution_index = VALID_RESOLUTIONS
+            .iter()
+            .position(|&n| n == resolution)
+            .unwrap() as u8;
+        self.write_command(Command::SetResolution, Some(resolution_index))
     }
 
-    pub fn request_status(&mut self) -> Result<(MouseStatus, MouseResolution, u8)> {
+    pub fn request_status(&mut self) -> Result<(MouseStatus, u8, u8)> {
         self.write_command(Command::StatusRequest, None)?;
         let status = MouseStatus::from_bits_truncate(self.controller.read_data()?);
-        let resolution = MouseResolution::try_from(self.controller.read_data()?)?;
+        let resolution = self.controller.read_data()?;
         let sample_rate = self.controller.read_data()?;
+        if !VALID_RESOLUTIONS.contains(&resolution) {
+            return Err(MouseError::InvalidResolution(resolution));
+        }
+        if !VALID_SAMPLE_RATES.contains(&sample_rate) {
+            return Err(MouseError::InvalidSampleRate(sample_rate));
+        }
         Ok((status, resolution, sample_rate))
     }
 
@@ -122,8 +137,10 @@ impl<'c> Mouse<'c> {
         Ok(MouseType::from(self.controller.read_data()?))
     }
 
-    // TODO: Valid sample rates are 10, 20, 40, 60, 80, 100, and 200 samples/sec
     pub fn set_sample_rate(&mut self, sample_rate: u8) -> Result<()> {
+        if !VALID_SAMPLE_RATES.contains(&sample_rate) {
+            return Err(MouseError::InvalidSampleRate(sample_rate));
+        }
         self.write_command(Command::SetSampleRate, Some(sample_rate))
     }
 

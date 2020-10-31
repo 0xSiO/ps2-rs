@@ -23,6 +23,7 @@ pub enum MouseError {
     Resend,
     InvalidResponse(u8),
     InvalidResolution(u8),
+    InvalidSampleRate(u8),
     ControllerError(ControllerError),
 }
 
