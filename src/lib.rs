@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(const_mut_refs)]
 
 // References:
 //   https://web.archive.org/web/20091124055529/http://www.computer-engineering.org/index.php?title=Main_Page
