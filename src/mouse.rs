@@ -111,13 +111,20 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetStreamMode, None)
     }
 
-    pub fn read_data(&mut self) -> Result<()> {
+    pub fn read_data(&mut self) -> Result<(MouseMovement, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
-        // TODO: Process movement packet
-        let _movement_flags = MouseMovement::from_bits_truncate(self.controller.read_data()?);
-        let _x_movement = self.controller.read_data()?;
-        let _y_movement = self.controller.read_data()?;
-        Ok(())
+        let movement_flags = MouseMovement::from_bits_truncate(self.controller.read_data()?);
+        let mut x_movement = self.controller.read_data()? as i16;
+        let mut y_movement = self.controller.read_data()? as i16;
+
+        if movement_flags.contains(MouseMovement::X_SIGN_BIT) {
+            x_movement *= -1;
+        }
+        if movement_flags.contains(MouseMovement::Y_SIGN_BIT) {
+            y_movement *= -1;
+        }
+
+        Ok((movement_flags, x_movement, y_movement))
     }
 
     pub fn reset_wrap_mode(&mut self) -> Result<()> {
