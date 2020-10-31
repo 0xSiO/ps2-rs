@@ -56,6 +56,17 @@ bitflags! {
     }
 }
 
+bitflags! {
+    pub struct MouseStatus: u8 {
+        const RIGHT_BUTTON_PRESSED   = 0b00000001;
+        const MIDDLE_BUTTON_PRESSED  = 0b00000010;
+        const LEFT_BUTTON_PRESSED    = 0b00000100;
+        const SCALING_2_TO_1         = 0b00010000;
+        const DATA_REPORTING_ENABLED = 0b00100000;
+        const REMOTE_MODE_ENABLED    = 0b01000000;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

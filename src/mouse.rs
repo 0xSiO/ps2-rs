@@ -1,6 +1,6 @@
 use crate::{
-    controller::Controller, error::MouseError, COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED,
-    SELF_TEST_PASSED,
+    controller::Controller, error::MouseError, flags::MouseStatus, COMMAND_ACKNOWLEDGED, RESEND,
+    SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
 // Valid resolution values in counts per mm
@@ -28,11 +28,20 @@ enum Command {
     ResetAndSelfTest = 0xff,
 }
 
+#[repr(u8)]
+pub enum Resolution {
+    OneCountPerMM = 0x00,
+    TwoCountPerMM = 0x01,
+    FourCountPerMM = 0x02,
+    EightCountPerMM = 0x03,
+}
+
 #[derive(Debug)]
 pub struct Mouse {
     controller: Controller,
 }
 
+// TODO: Support Intellimouse extensions
 impl Mouse {
     pub const fn new() -> Self {
         Self {
@@ -74,11 +83,17 @@ impl Mouse {
         self.write_command(Command::SetScaling2To1, None)
     }
 
-    pub unsafe fn set_resolution(&mut self, resolution: u8) -> Result<()> {
-        if !VALID_RESOLUTIONS.contains(&resolution) {
-            return Err(MouseError::InvalidResolution(resolution));
-        }
-        self.write_command(Command::SetResolution, Some(resolution))
+    pub unsafe fn set_resolution(&mut self, resolution: Resolution) -> Result<()> {
+        self.write_command(Command::SetResolution, Some(resolution as u8))
+    }
+
+    pub unsafe fn request_status(&mut self) -> Result<(MouseStatus, u8, u8)> {
+        self.write_command(Command::StatusRequest, None)?;
+        let status = MouseStatus::from_bits_truncate(self.controller.read_data()?);
+        // TODO: Parse this into an enum variant
+        let resolution = self.controller.read_data()?;
+        let sample_rate = self.controller.read_data()?;
+        Ok((status, resolution, sample_rate))
     }
 
     pub unsafe fn resend_last_byte(&mut self) -> Result<u8> {
