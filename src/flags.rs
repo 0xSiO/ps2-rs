@@ -67,6 +67,18 @@ bitflags! {
     }
 }
 
+bitflags! {
+    pub struct MouseMovement: u8 {
+        const LEFT_BUTTON_PRESSED   = 0b00000001;
+        const RIGHT_BUTTON_PRESSED  = 0b00000010;
+        const MIDDLE_BUTTON_PRESSED = 0b00000100;
+        const X_SIGN_BIT            = 0b00010000;
+        const Y_SIGN_BIT            = 0b00100000;
+        const X_OVERFLOW            = 0b01000000;
+        const Y_OVERFLOW            = 0b10000000;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

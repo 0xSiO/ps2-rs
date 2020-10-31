@@ -1,8 +1,10 @@
 use core::convert::TryFrom;
 
 use crate::{
-    controller::Controller, error::MouseError, flags::MouseStatus, COMMAND_ACKNOWLEDGED, RESEND,
-    SELF_TEST_FAILED, SELF_TEST_PASSED,
+    controller::Controller,
+    error::MouseError,
+    flags::{MouseMovement, MouseStatus},
+    COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
 type Result<T> = core::result::Result<T, MouseError>;
@@ -106,6 +108,54 @@ impl<'c> Mouse<'c> {
         let resolution = MouseResolution::try_from(self.controller.read_data()?)?;
         let sample_rate = self.controller.read_data()?;
         Ok((status, resolution, sample_rate))
+    }
+
+    pub fn set_stream_mode(&mut self) -> Result<()> {
+        self.write_command(Command::SetStreamMode, None)
+    }
+
+    pub fn read_data(&mut self) -> Result<()> {
+        self.write_command(Command::ReadData, None)?;
+        // TODO: Process movement packet
+        let _movement_flags = MouseMovement::from_bits_truncate(self.controller.read_data()?);
+        let _x_movement = self.controller.read_data()?;
+        let _y_movement = self.controller.read_data()?;
+        Ok(())
+    }
+
+    pub fn reset_wrap_mode(&mut self) -> Result<()> {
+        self.write_command(Command::ResetWrapMode, None)
+    }
+
+    pub fn set_wrap_mode(&mut self) -> Result<()> {
+        self.write_command(Command::SetWrapMode, None)
+    }
+
+    pub fn set_remote_mode(&mut self) -> Result<()> {
+        self.write_command(Command::SetRemoteMode, None)
+    }
+
+    // TODO: Return MouseType enum
+    pub fn get_device_id(&mut self) -> Result<u8> {
+        self.write_command(Command::GetDeviceID, None)?;
+        Ok(self.controller.read_data()?)
+    }
+
+    // TODO: Valid sample rates are 10, 20, 40, 60, 80, 100, and 200 samples/sec
+    pub fn set_sample_rate(&mut self, sample_rate: u8) -> Result<()> {
+        self.write_command(Command::SetSampleRate, Some(sample_rate))
+    }
+
+    pub fn enable_data_reporting(&mut self) -> Result<()> {
+        self.write_command(Command::EnableDataReporting, None)
+    }
+
+    pub fn disable_data_reporting(&mut self) -> Result<()> {
+        self.write_command(Command::DisableDataReporting, None)
+    }
+
+    pub fn set_defaults(&mut self) -> Result<()> {
+        self.write_command(Command::SetDefaults, None)
     }
 
     pub fn resend_last_byte(&mut self) -> Result<u8> {
