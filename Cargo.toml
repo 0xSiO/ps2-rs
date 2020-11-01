@@ -9,5 +9,4 @@ edition = "2018"
 
 [dependencies]
 bitflags = "1.2.1"
-libm = "0.2.1"
 x86_64 = "0.12.2"
