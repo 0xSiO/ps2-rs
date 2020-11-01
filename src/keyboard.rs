@@ -13,12 +13,6 @@ const BUFFER_OVERRUN: u8 = 0x00;
 const ECHO: u8 = 0xee;
 const KEY_DETECTION_ERROR: u8 = 0xff;
 
-// Scale is 0x00 (30 Hz) to 0x1f (2 Hz). I'm assuming it's linear, but I could be wrong.
-// For desired frequency f and scale factor s, the approximate byte needed is (30 - f) / s
-const TYPEMATIC_RATE_SCALE_FACTOR: f64 = 28.0 / 31.0;
-// Valid typematic delay values in milliseconds
-const VALID_DELAYS: [u16; 4] = [250, 500, 750, 1000];
-
 type Result<T> = core::result::Result<T, KeyboardError>;
 
 #[repr(u8)]
@@ -123,24 +117,19 @@ impl<'c> Keyboard<'c> {
         }
     }
 
-    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: f64, delay: u16) -> Result<()> {
-        if repeat_rate < 2.0 || repeat_rate > 30.0 {
+    // Repeat rate and delay byte can be translated to actual values using the tables at
+    // https://web.archive.org/web/20091128232820/http://www.computer-engineering.org/index.php?title=PS/2_Keyboard_Interface#Command_Set
+    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: u8, delay: u8) -> Result<()> {
+        if repeat_rate > 31 {
             return Err(KeyboardError::InvalidTypematicFrequency(repeat_rate));
         }
-        if !VALID_DELAYS.contains(&delay) {
+        if delay > 3 {
             return Err(KeyboardError::InvalidTypematicDelay(delay));
         }
 
-        let scaled_rate: f64 = (30.0 - repeat_rate) / TYPEMATIC_RATE_SCALE_FACTOR;
-        let encoded_rate = 0b00011111 & (libm::round(scaled_rate) as u8);
-
-        // Ok to unwrap since we already checked for existence in VALID_DELAYS. Also safe
-        // to cast to u8 since VALID_DELAYS has only 4 elements
-        let encoded_delay = VALID_DELAYS.iter().position(|&n| n == delay).unwrap() as u8;
-
         self.write_command(
             Command::SetTypematicRateAndDelay,
-            Some(encoded_delay << 5 | encoded_rate),
+            Some(delay << 5 | repeat_rate),
         )
     }
 

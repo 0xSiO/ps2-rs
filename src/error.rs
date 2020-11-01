@@ -12,8 +12,8 @@ pub enum KeyboardError {
     Resend,
     KeyDetectionError,
     InvalidResponse(u8),
-    InvalidTypematicFrequency(f64),
-    InvalidTypematicDelay(u16),
+    InvalidTypematicFrequency(u8),
+    InvalidTypematicDelay(u8),
     ControllerError(ControllerError),
 }
 
