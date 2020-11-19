@@ -59,14 +59,6 @@ impl<'c> Keyboard<'c> {
         Self { controller }
     }
 
-    pub fn disable_blocking_read(&mut self) {
-        self.controller.disable_blocking_read();
-    }
-
-    pub fn enable_blocking_read(&mut self) {
-        self.controller.enable_blocking_read();
-    }
-
     fn check_response(&mut self) -> Result<()> {
         match self.controller.read_data()? {
             BUFFER_OVERRUN => Err(KeyboardError::KeyDetectionError),

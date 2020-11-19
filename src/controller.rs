@@ -46,7 +46,6 @@ pub(crate) enum Command {
 /// USB controller has been initialized.
 #[derive(Debug)]
 pub struct Controller {
-    non_blocking_read: bool,
     command_register: Port<u8>,
     data_port: Port<u8>,
 }
@@ -56,7 +55,6 @@ impl Controller {
     // command and data ports.
     pub const unsafe fn new() -> Self {
         Self {
-            non_blocking_read: false,
             command_register: Port::new(COMMAND_REGISTER),
             data_port: Port::new(DATA_PORT),
         }
@@ -70,23 +68,11 @@ impl Controller {
         Mouse::new(self)
     }
 
-    pub fn disable_blocking_read(&mut self) {
-        self.non_blocking_read = true;
-    }
-
-    pub fn enable_blocking_read(&mut self) {
-        self.non_blocking_read = false;
-    }
-
     pub fn read_status(&mut self) -> ControllerStatus {
         ControllerStatus::from_bits_truncate(unsafe { self.command_register.read() })
     }
 
     fn wait_for_read(&mut self) -> Result<()> {
-        if self.non_blocking_read {
-            return Err(ControllerError::WouldBlock);
-        }
-
         let mut timeout = TIMEOUT;
         while !self.read_status().contains(ControllerStatus::OUTPUT_FULL) && timeout > 0 {
             timeout -= 1;
