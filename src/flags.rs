@@ -7,6 +7,7 @@ bitflags! {
         /// Whether data has been written to port 0x60.
         const INPUT_FULL         = 0b00000010;
         /// Should be set if the system boots and the Basic Assurance Test passes successfully.
+        /// Unset after a power-on reset.
         const SYSTEM_FLAG        = 0b00000100;
         /// Whether data written to port 0x60 is for a PS/2 controller command rather than a PS/2
         /// device.
@@ -45,10 +46,10 @@ bitflags! {
         const KEYBOARD_DATA        = 0b00000001;
         /// Mouse input data line.
         const MOUSE_DATA           = 0b00000010;
-        /// Whether the motherboard has access to external RAM.
+        /// Whether an extra 256 KB of system board RAM is enabled.
         const ENABLE_EXTRA_RAM     = 0b00010000;
         /// Manufacturing jumper setting for keyboard testing.
-        const MANUFACTURING_JUMPER = 0b00100000;
+        const NO_MANUFACTURING_JUMPER = 0b00100000;
         /// Keyboard display type bit.
         const MONOCHROME_DISPLAY   = 0b01000000;
         /// Whether keyboard functionality is enabled.
@@ -66,9 +67,9 @@ bitflags! {
         const MOUSE_DATA         = 0b00000100;
         /// Whether mouse clock line is pulled low.
         const MOUSE_CLOCK        = 0b00001000;
-        /// Whether keyboard triggers IRQ1.
+        /// Whether keyboard triggers IRQ1 when input buffer is full.
         const KEYBOARD_INTERRUPT = 0b00010000;
-        /// Whether mouse triggers IRQ12.
+        /// Whether mouse triggers IRQ12 when input buffer is full.
         const MOUSE_INTERRUPT    = 0b00100000;
         /// Whether keyboard clock line is pulled low.
         const KEYBOARD_CLOCK     = 0b01000000;
