@@ -79,10 +79,12 @@ impl<'c> Keyboard<'c> {
         Ok(())
     }
 
+    /// Set the state of the keyboard LEDs.
     pub fn set_leds(&mut self, leds: KeyboardLedFlags) -> Result<()> {
         self.write_command(Command::SetLeds, Some(leds.bits()))
     }
 
+    /// Run a diagnostic echo command.
     pub fn echo(&mut self) -> Result<()> {
         self.controller.write_data(Command::Echo as u8)?;
         match self.controller.read_data()? {
@@ -92,16 +94,19 @@ impl<'c> Keyboard<'c> {
         }
     }
 
+    /// Get the number corresponding to the current scancode set (1, 2, or 3).
     pub fn get_scancode_set(&mut self) -> Result<u8> {
         self.write_command(Command::GetOrSetScancode, Some(0))?;
         Ok(self.controller.read_data()?)
     }
 
+    /// Set the scancode set number (1, 2, or 3).
     pub fn set_scancode_set(&mut self, scancode_set: u8) -> Result<()> {
         self.write_command(Command::GetOrSetScancode, Some(scancode_set))?;
         Ok(())
     }
 
+    /// Attempt to obtain a device identifier for this keyboard.
     pub fn identify_keyboard(&mut self) -> Result<KeyboardType> {
         // First check to see if the command was acknowledged
         match self.write_command(Command::IdentifyKeyboard, None) {
@@ -122,8 +127,9 @@ impl<'c> Keyboard<'c> {
         }
     }
 
-    // Repeat rate and delay byte can be translated to actual values using the tables at
-    // https://web.archive.org/web/20091128232820/http://www.computer-engineering.org/index.php?title=PS/2_Keyboard_Interface#Command_Set
+    /// Set the typematic repeat rate and delay. Use the 'Repeat rate' and 'Delay' tables on
+    /// [this](https://web.archive.org/web/20091128232820/http://www.computer-engineering.org/index.php?title=PS/2_Keyboard_Interface#Command_Set)
+    /// page to create the configuration byte.
     pub fn set_typematic_rate_and_delay(&mut self, typematic_config: u8) -> Result<()> {
         self.write_command(
             Command::SetTypematicRateAndDelay,
@@ -132,46 +138,59 @@ impl<'c> Keyboard<'c> {
         )
     }
 
+    /// Clear the data buffer and last typematic key, then enable scancodes.
     pub fn enable_scanning(&mut self) -> Result<()> {
         self.write_command(Command::EnableScanning, None)
     }
 
+    /// Reset keyboard to power-on state and disable scancodes.
     pub fn disable_scanning(&mut self) -> Result<()> {
         self.write_command(Command::DisableScanning, None)
     }
 
+    /// Reset keyboard to power-on state by clearing the data buffer and restoring all default key
+    /// settings.
     pub fn set_defaults(&mut self) -> Result<()> {
         self.write_command(Command::SetDefaults, None)
     }
 
+    /// Set all keys to typematic only. This only has an effect if scancode set 3 is in use.
     pub fn set_all_keys_typematic(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysTypematic, None)
     }
 
+    /// Set all keys to make/break only. This only has an effect if scancode set 3 is in use.
     pub fn set_all_keys_make_break(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysMakeBreak, None)
     }
 
+    /// Set all keys to make only. This only has an effect if scancode set 3 is in use.
     pub fn set_all_keys_make_only(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysMakeOnly, None)
     }
 
+    /// Set all keys to typematic and make/break. This only has an effect if scancode set 3 is in
+    /// use.
     pub fn set_all_keys_typematic_make_break(&mut self) -> Result<()> {
         self.write_command(Command::SetAllKeysTypematicAndMakeBreak, None)
     }
 
+    /// Set a specific key to typematic only. This only has an effect if scancode set 3 is in use.
     pub fn set_key_typematic(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyTypematic, Some(scancode))
     }
 
+    /// Set a specific key to make/break only. This only has an effect if scancode set 3 is in use.
     pub fn set_key_make_break(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyMakeBreak, Some(scancode))
     }
 
+    /// Set a specific key to make only. This only has an effect if scancode set 3 is in use.
     pub fn set_key_make_only(&mut self, scancode: u8) -> Result<()> {
         self.write_command(Command::SetKeyMakeOnly, Some(scancode))
     }
 
+    /// Get the last byte sent by the keyboard.
     pub fn resend_last_byte(&mut self) -> Result<u8> {
         self.controller.write_data(Command::ResendLastByte as u8)?;
         match self.controller.read_data()? {
@@ -180,6 +199,8 @@ impl<'c> Keyboard<'c> {
         }
     }
 
+    /// Reset the keyboard and perform a Basic Assurance Test. Returns
+    /// [KeyboardError::SelfTestFailed] if the test fails.
     pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.controller
             .write_data(Command::ResetAndSelfTest as u8)?;
