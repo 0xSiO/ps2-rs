@@ -119,17 +119,11 @@ impl<'c> Keyboard<'c> {
 
     // Repeat rate and delay byte can be translated to actual values using the tables at
     // https://web.archive.org/web/20091128232820/http://www.computer-engineering.org/index.php?title=PS/2_Keyboard_Interface#Command_Set
-    pub fn set_typematic_rate_and_delay(&mut self, repeat_rate: u8, delay: u8) -> Result<()> {
-        if repeat_rate > 31 {
-            return Err(KeyboardError::InvalidTypematicFrequency(repeat_rate));
-        }
-        if delay > 3 {
-            return Err(KeyboardError::InvalidTypematicDelay(delay));
-        }
-
+    pub fn set_typematic_rate_and_delay(&mut self, typematic_config: u8) -> Result<()> {
         self.write_command(
             Command::SetTypematicRateAndDelay,
-            Some(delay << 5 | repeat_rate),
+            // Most significant bit is ignored
+            Some(typematic_config & 0b01111111),
         )
     }
 
