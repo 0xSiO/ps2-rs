@@ -75,14 +75,26 @@ impl<'c> Mouse<'c> {
         Ok(())
     }
 
+    /// Set the scaling of reported data to be 1:1.
+    ///
+    /// Read more about scaling
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Inputs.2C_Resolution.2C_and_Scaling).
     pub fn set_scaling_one_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling1To1, None)
     }
 
+    /// Set the scaling of reported data to be 2:1.
+    ///
+    /// Read more about scaling
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Inputs.2C_Resolution.2C_and_Scaling).
     pub fn set_scaling_two_to_one(&mut self) -> Result<()> {
         self.write_command(Command::SetScaling2To1, None)
     }
 
+    /// Set mouse resolution.
+    ///
+    /// Valid values are `0` for 1 count/mm, `1` for 2 counts/mm, `2` for 4 counts/mm, or `3` for
+    /// 8 counts/mm.
     pub fn set_resolution(&mut self, resolution: u8) -> Result<()> {
         if !VALID_RESOLUTIONS.contains(&resolution) {
             return Err(MouseError::InvalidResolution(resolution));
@@ -96,6 +108,10 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetResolution, Some(resolution_index))
     }
 
+    /// Request a status packet from the mouse and reset movement counters.
+    ///
+    /// The first byte returned is a bitfield, the second byte is the mouse resolution, and the
+    /// third is the sample rate.
     pub fn request_status(&mut self) -> Result<(MouseStatusFlags, u8, u8)> {
         self.write_command(Command::StatusRequest, None)?;
         let status = MouseStatusFlags::from_bits_truncate(self.controller.read_data()?);
@@ -110,10 +126,19 @@ impl<'c> Mouse<'c> {
         Ok((status, resolution, sample_rate))
     }
 
+    /// Reset mouse movement counters and enter streaming mode.
+    ///
+    /// Read more about modes
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Modes_of_Operation).
     pub fn set_stream_mode(&mut self) -> Result<()> {
         self.write_command(Command::SetStreamMode, None)
     }
 
+    /// Request a movement data packet from the mouse and reset movement counters.
+    ///
+    /// The first byte returned is a bitfield, and the other two bytes are 9-bit two's complement
+    /// integers for the 'x' and 'y' movement offset relative to the position at which the last
+    /// packet was sent.
     pub fn read_data(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
         let movement_flags = MouseMovementFlags::from_bits_truncate(self.controller.read_data()?);
@@ -130,23 +155,40 @@ impl<'c> Mouse<'c> {
         Ok((movement_flags, x_movement as i16, y_movement as i16))
     }
 
+    /// Reset mouse movement counters and exit wrap mode, entering the mode the mouse was in
+    /// previously.
+    ///
+    /// Read more about modes
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Modes_of_Operation).
     pub fn reset_wrap_mode(&mut self) -> Result<()> {
         self.write_command(Command::ResetWrapMode, None)
     }
 
+    /// Reset mouse movement counters and enter wrap mode.
+    ///
+    /// Read more about modes
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Modes_of_Operation).
     pub fn set_wrap_mode(&mut self) -> Result<()> {
         self.write_command(Command::SetWrapMode, None)
     }
 
+    /// Reset mouse movement counters and enter remote mode.
+    ///
+    /// Read more about modes
+    /// [here](https://web.archive.org/web/20090325002201/http://www.computer-engineering.org/index.php?title=PS/2_Mouse_Interface#Modes_of_Operation).
     pub fn set_remote_mode(&mut self) -> Result<()> {
         self.write_command(Command::SetRemoteMode, None)
     }
 
+    /// Attempt to obtain a device identifier for this mouse.
     pub fn get_device_id(&mut self) -> Result<MouseType> {
         self.write_command(Command::GetDeviceID, None)?;
         Ok(MouseType::from(self.controller.read_data()?))
     }
 
+    /// Set the mouse sample rate and reset movement counters.
+    ///
+    /// Valid rates are `10`, `20`, `40`, `60`, `80`, `100`, and `200`, in samples per second.
     pub fn set_sample_rate(&mut self, sample_rate: u8) -> Result<()> {
         if !VALID_SAMPLE_RATES.contains(&sample_rate) {
             return Err(MouseError::InvalidSampleRate(sample_rate));
@@ -154,25 +196,43 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetSampleRate, Some(sample_rate))
     }
 
+    /// Enable data reporting and reset movement counters.
+    ///
+    /// This only affects data reporting in stream mode.
     pub fn enable_data_reporting(&mut self) -> Result<()> {
         self.write_command(Command::EnableDataReporting, None)
     }
 
+    /// Disable data reporting and reset movement counters.
+    ///
+    /// This only affects data reporting in stream mode. Note that this only disables reporting,
+    /// not sampling. Movement packets may still be read using [`Mouse::read_data`].
     pub fn disable_data_reporting(&mut self) -> Result<()> {
         self.write_command(Command::DisableDataReporting, None)
     }
 
+    /// Set defaults, clear movement counters, and enter stream mode.
+    ///
+    /// Default settings are as follows: sampling rate = 100 samples/second,
+    /// resolution = 4 counts/mm, scaling = 1:1, data reporting disabled.
     pub fn set_defaults(&mut self) -> Result<()> {
         self.write_command(Command::SetDefaults, None)
     }
 
+    /// Request that the mouse resend the last transmitted byte or packet.
+    ///
+    /// Currently, this does not return any data, since the resent data may be one or more bytes in
+    /// length. It is the responsibility of the caller to consume these bytes using
+    /// [`Controller::read_data`].
     pub fn resend_last_packet(&mut self) -> Result<()> {
-        // A packet can be one or more bytes, so let the user consume those
         Ok(self
             .controller
             .write_mouse(Command::ResendLastPacket as u8)?)
     }
 
+    /// Reset the mouse and perform a Basic Assurance Test.
+    ///
+    /// Returns [`MouseError::SelfTestFailed`] if the test fails.
     pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.write_command(Command::ResetAndSelfTest, None)?;
         let result = match self.controller.read_data()? {

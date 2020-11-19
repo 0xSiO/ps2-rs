@@ -110,18 +110,22 @@ impl Controller {
         Ok(unsafe { self.command_register.write(command as u8) })
     }
 
-    pub(crate) fn read_data(&mut self) -> Result<u8> {
+    /// Read a byte from the data buffer once it is full.
+    pub fn read_data(&mut self) -> Result<u8> {
         self.wait_for_read()?;
         Ok(unsafe { self.data_register.read() })
     }
 
-    pub(crate) fn write_data(&mut self, data: u8) -> Result<()> {
+    /// Write a byte to the data buffer once it is empty.
+    pub fn write_data(&mut self, data: u8) -> Result<()> {
         self.wait_for_write()?;
         Ok(unsafe { self.data_register.write(data) })
     }
 
-    /// Read a byte from the controller's internal RAM. The desired byte index must be between 0
-    /// and 31. Byte 0 is also known as the configuration byte or command byte.
+    /// Read a byte from the controller's internal RAM.
+    ///
+    /// The desired byte index must be between 0 and 31. Byte 0 is also known as the configuration
+    /// byte or command byte.
     pub fn read_internal_ram(&mut self, byte_number: u8) -> Result<u8> {
         // Limit from 0 - 31, start command byte at 0x20
         let command = Command::ReadInternalRam as u8 | byte_number & 0x1f;
@@ -133,8 +137,10 @@ impl Controller {
         self.read_data()
     }
 
-    /// Write a byte to the controller's internal RAM. The desired byte index must be between 0
-    /// and 31. Byte 0 is also known as the configuration byte or command byte.
+    /// Write a byte to the controller's internal RAM.
+    ///
+    /// The desired byte index must be between 0 and 31. Byte 0 is also known as the configuration
+    /// byte or command byte.
     pub fn write_internal_ram(&mut self, byte_number: u8, data: u8) -> Result<()> {
         // Limit from 0 - 31, start command byte at 0x60
         let command = Command::WriteInternalRam as u8 | byte_number & 0x1f;
@@ -170,8 +176,9 @@ impl Controller {
         self.write_command(Command::EnableMouse)
     }
 
-    /// Perform a self-test on the mouse. Returns [`ControllerError::TestFailed`] if the test
-    /// fails.
+    /// Perform a self-test on the mouse.
+    ///
+    /// Returns [`ControllerError::TestFailed`] if the test fails.
     pub fn test_mouse(&mut self) -> Result<()> {
         self.write_command(Command::TestMouse)?;
         match self.read_data()? {
@@ -180,8 +187,9 @@ impl Controller {
         }
     }
 
-    /// Perform a self-test on the controller. Returns [`ControllerError::TestFailed`] if the test
-    /// fails.
+    /// Perform a self-test on the controller.
+    ///
+    /// Returns [`ControllerError::TestFailed`] if the test fails.
     pub fn test_controller(&mut self) -> Result<()> {
         self.write_command(Command::TestController)?;
         match self.read_data()? {
@@ -190,8 +198,9 @@ impl Controller {
         }
     }
 
-    /// Perform a self-test on the keyboard. Returns [`ControllerError::TestFailed`] if the test
-    /// fails.
+    /// Perform a self-test on the keyboard.
+    ///
+    /// Returns [`ControllerError::TestFailed`] if the test fails.
     pub fn test_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::TestKeyboard)?;
         match self.read_data()? {
@@ -211,12 +220,16 @@ impl Controller {
         Ok(result)
     }
 
-    /// Disable the keyboard. Sets the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
+    /// Disable the keyboard.
+    ///
+    /// Sets the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
     pub fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
-    /// Enable the keyboard. Clears the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
+    /// Enable the keyboard.
+    ///
+    /// Clears the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
     pub fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
@@ -251,15 +264,17 @@ impl Controller {
         self.write_data(output.bits())
     }
 
-    /// Write a byte to the data buffer as if it were received from the keyboard. This will trigger
-    /// an interrupt if interrupts are enabled.
+    /// Write a byte to the data buffer as if it were received from the keyboard.
+    ///
+    /// This will trigger an interrupt if interrupts are enabled.
     pub fn write_keyboard_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteKeyboardBuffer)?;
         self.write_data(data)
     }
 
-    /// Write a byte to the data buffer as if it were received from the mouse. This will trigger an
-    /// interrupt if interrupts are enabled.
+    /// Write a byte to the data buffer as if it were received from the mouse.
+    ///
+    /// This will trigger an interrupt if interrupts are enabled.
     pub fn write_mouse_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouseBuffer)?;
         self.write_data(data)
