@@ -2,7 +2,10 @@ use x86_64::instructions::port::Port;
 
 use crate::{
     error::ControllerError,
-    flags::{ControllerConfigFlags, InputPortFlags, OutputPortFlags, ControllerStatusFlags, TestPortFlags},
+    flags::{
+        ControllerConfigFlags, ControllerStatusFlags, InputPortFlags, OutputPortFlags,
+        TestPortFlags,
+    },
     keyboard::Keyboard,
     mouse::Mouse,
 };
@@ -81,7 +84,11 @@ impl Controller {
 
     fn wait_for_read(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
-        while !self.read_status().contains(ControllerStatusFlags::OUTPUT_FULL) && timeout > 0 {
+        while !self
+            .read_status()
+            .contains(ControllerStatusFlags::OUTPUT_FULL)
+            && timeout > 0
+        {
             timeout -= 1;
         }
 
@@ -94,7 +101,11 @@ impl Controller {
 
     fn wait_for_write(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
-        while self.read_status().contains(ControllerStatusFlags::INPUT_FULL) && timeout > 0 {
+        while self
+            .read_status()
+            .contains(ControllerStatusFlags::INPUT_FULL)
+            && timeout > 0
+        {
             timeout -= 1;
         }
 
