@@ -159,12 +159,12 @@ impl Controller {
         Ok(self.write_internal_ram(0, config.bits())?)
     }
 
-    /// Disable the mouse.
+    /// Disable the mouse. Sets the [ControllerConfig::DISABLE_MOUSE] flag.
     pub fn disable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::DisableMouse)
     }
 
-    /// Enable the mouse.
+    /// Enable the mouse. Clears the [ControllerConfig::DISABLE_MOUSE] flag.
     pub fn enable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::EnableMouse)
     }
@@ -209,12 +209,12 @@ impl Controller {
         Ok(result)
     }
 
-    /// Disable the keyboard.
+    /// Disable the keyboard. Sets the [ControllerConfig::DISABLE_KEYBOARD] flag.
     pub fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
-    /// Enable the keyboard.
+    /// Enable the keyboard. Clears the [ControllerConfig::DISABLE_KEYBOARD] flag.
     pub fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
