@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 bitflags! {
-    pub struct ControllerStatus: u8 {
+    pub struct ControllerStatusFlags: u8 {
         /// Whether there is data available to read at port 0x60.
         const OUTPUT_FULL        = 0b00000001;
         /// Whether data has been written to port 0x60.
@@ -24,7 +24,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerConfig: u8 {
+    pub struct ControllerConfigFlags: u8 {
         /// Whether the keyboard should trigger any interrupts.
         const ENABLE_KEYBOARD_INTERRUPT = 0b00000001;
         /// Whether the mouse should trigger any interrupts.
@@ -42,7 +42,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerInput: u8 {
+    pub struct InputPortFlags: u8 {
         /// Keyboard input data line.
         const KEYBOARD_DATA        = 0b00000001;
         /// Mouse input data line.
@@ -59,7 +59,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct ControllerOutput: u8 {
+    pub struct OutputPortFlags: u8 {
         /// Whether to reset the CPU.
         const SYSTEM_RESET       = 0b00000001;
         /// Whether the 20th address line is enabled.
@@ -80,7 +80,14 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct KeyboardLeds: u8 {
+    pub struct TestPortFlags: u8 {
+        const KEYBOARD_CLOCK = 0b01;
+        const MOUSE_CLOCK    = 0b10;
+    }
+}
+
+bitflags! {
+    pub struct KeyboardLedFlags: u8 {
         const SCROLL_LOCK = 0b001;
         const NUM_LOCK    = 0b010;
         const CAPS_LOCK   = 0b100;
@@ -88,7 +95,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct MouseStatus: u8 {
+    pub struct MouseStatusFlags: u8 {
         const RIGHT_BUTTON_PRESSED   = 0b00000001;
         const MIDDLE_BUTTON_PRESSED  = 0b00000010;
         const LEFT_BUTTON_PRESSED    = 0b00000100;
@@ -99,7 +106,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct MouseMovement: u8 {
+    pub struct MouseMovementFlags: u8 {
         const LEFT_BUTTON_PRESSED   = 0b00000001;
         const RIGHT_BUTTON_PRESSED  = 0b00000010;
         const MIDDLE_BUTTON_PRESSED = 0b00000100;
@@ -117,17 +124,17 @@ mod tests {
     #[test]
     fn undefined_bits_test() {
         // Undefined bits in config byte and input port default to 0
-        assert_eq!(ControllerConfig::all().bits(), 0b01110111);
-        assert_eq!(ControllerInput::all().bits(), 0b11110011);
+        assert_eq!(ControllerConfigFlags::all().bits(), 0b01110111);
+        assert_eq!(InputPortFlags::all().bits(), 0b11110011);
     }
 
     #[test]
     fn handles_all_zeroes_test() {
         assert_eq!(
             (
-                ControllerConfig::from_bits_truncate(0).bits(),
-                ControllerInput::from_bits_truncate(0).bits(),
-                ControllerOutput::from_bits_truncate(0).bits()
+                ControllerConfigFlags::from_bits_truncate(0).bits(),
+                InputPortFlags::from_bits_truncate(0).bits(),
+                OutputPortFlags::from_bits_truncate(0).bits()
             ),
             (0, 0, 0)
         );
