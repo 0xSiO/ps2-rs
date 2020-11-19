@@ -30,7 +30,7 @@ bitflags! {
         /// Whether the mouse should trigger any interrupts.
         const ENABLE_MOUSE_INTERRUPT    = 0b00000010;
         /// Whether to set the third bit in the status register. See
-        /// [ControllerStatus::SYSTEM_FLAG].
+        /// [`ControllerStatusFlags::SYSTEM_FLAG`].
         const SET_SYSTEM_FLAG           = 0b00000100;
         /// Whether to disable the keyboard interface by driving the clock line low.
         const DISABLE_KEYBOARD          = 0b00010000;

@@ -200,7 +200,7 @@ impl<'c> Keyboard<'c> {
     }
 
     /// Reset the keyboard and perform a Basic Assurance Test. Returns
-    /// [KeyboardError::SelfTestFailed] if the test fails.
+    /// [`KeyboardError::SelfTestFailed`] if the test fails.
     pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.controller
             .write_data(Command::ResetAndSelfTest as u8)?;
