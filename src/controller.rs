@@ -36,6 +36,14 @@ pub(crate) enum Command {
     PulseOutput = 0xf0,
 }
 
+/// The PS/2 controller.
+///
+/// Provides the functionality of an Intel 8042 chip. Many computers nowadays don't have
+/// PS/2 connectors, but emulate the mouse and keyboard as PS/2 devices through USB. The
+/// implementation of this emulation is usually different from manufacturer to
+/// manufacturer and cannot always be relied upon to perform correctly. Therefore, if
+/// you're writing an operating system, you should disable this legacy support once the
+/// USB controller has been initialized.
 #[derive(Debug)]
 pub struct Controller {
     non_blocking_read: bool,
