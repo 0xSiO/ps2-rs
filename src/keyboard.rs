@@ -1,7 +1,7 @@
 use crate::{
     controller::Controller,
     error::{ControllerError, KeyboardError},
-    flags::KeyboardLeds,
+    flags::KeyboardLedFlags,
     COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
@@ -79,7 +79,7 @@ impl<'c> Keyboard<'c> {
         Ok(())
     }
 
-    pub fn set_leds(&mut self, leds: KeyboardLeds) -> Result<()> {
+    pub fn set_leds(&mut self, leds: KeyboardLedFlags) -> Result<()> {
         self.write_command(Command::SetLeds, Some(leds.bits()))
     }
 

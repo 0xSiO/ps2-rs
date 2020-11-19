@@ -1,7 +1,7 @@
 use crate::{
     controller::Controller,
     error::MouseError,
-    flags::{MouseMovement, MouseStatus},
+    flags::{MouseMovementFlags, MouseStatusFlags},
     COMMAND_ACKNOWLEDGED, RESEND, SELF_TEST_FAILED, SELF_TEST_PASSED,
 };
 
@@ -96,9 +96,9 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetResolution, Some(resolution_index))
     }
 
-    pub fn request_status(&mut self) -> Result<(MouseStatus, u8, u8)> {
+    pub fn request_status(&mut self) -> Result<(MouseStatusFlags, u8, u8)> {
         self.write_command(Command::StatusRequest, None)?;
-        let status = MouseStatus::from_bits_truncate(self.controller.read_data()?);
+        let status = MouseStatusFlags::from_bits_truncate(self.controller.read_data()?);
         let resolution = self.controller.read_data()?;
         let sample_rate = self.controller.read_data()?;
         if !VALID_RESOLUTIONS.contains(&resolution) {
@@ -114,16 +114,16 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetStreamMode, None)
     }
 
-    pub fn read_data(&mut self) -> Result<(MouseMovement, i16, i16)> {
+    pub fn read_data(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
-        let movement_flags = MouseMovement::from_bits_truncate(self.controller.read_data()?);
+        let movement_flags = MouseMovementFlags::from_bits_truncate(self.controller.read_data()?);
         let mut x_movement = self.controller.read_data()? as u16;
         let mut y_movement = self.controller.read_data()? as u16;
 
-        if movement_flags.contains(MouseMovement::X_SIGN_BIT) {
+        if movement_flags.contains(MouseMovementFlags::X_SIGN_BIT) {
             x_movement |= 0xff00;
         }
-        if movement_flags.contains(MouseMovement::Y_SIGN_BIT) {
+        if movement_flags.contains(MouseMovementFlags::Y_SIGN_BIT) {
             y_movement |= 0xff00;
         }
 

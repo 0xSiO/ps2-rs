@@ -2,7 +2,7 @@ use x86_64::instructions::port::Port;
 
 use crate::{
     error::ControllerError,
-    flags::{ControllerConfig, ControllerInput, ControllerOutput, ControllerStatus},
+    flags::{ControllerConfigFlags, InputPortFlags, OutputPortFlags, ControllerStatusFlags, TestPortFlags},
     keyboard::Keyboard,
     mouse::Mouse,
 };
@@ -33,6 +33,7 @@ pub(crate) enum Command {
     WriteKeyboardBuffer = 0xd2,
     WriteMouseBuffer = 0xd3,
     WriteMouse = 0xd4,
+    ReadTestPort = 0xe0,
     PulseOutput = 0xf0,
 }
 
@@ -74,13 +75,13 @@ impl Controller {
     }
 
     /// Read the status register of the controller.
-    pub fn read_status(&mut self) -> ControllerStatus {
-        ControllerStatus::from_bits_truncate(unsafe { self.command_register.read() })
+    pub fn read_status(&mut self) -> ControllerStatusFlags {
+        ControllerStatusFlags::from_bits_truncate(unsafe { self.command_register.read() })
     }
 
     fn wait_for_read(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
-        while !self.read_status().contains(ControllerStatus::OUTPUT_FULL) && timeout > 0 {
+        while !self.read_status().contains(ControllerStatusFlags::OUTPUT_FULL) && timeout > 0 {
             timeout -= 1;
         }
 
@@ -93,7 +94,7 @@ impl Controller {
 
     fn wait_for_write(&mut self) -> Result<()> {
         let mut timeout = TIMEOUT;
-        while self.read_status().contains(ControllerStatus::INPUT_FULL) && timeout > 0 {
+        while self.read_status().contains(ControllerStatusFlags::INPUT_FULL) && timeout > 0 {
             timeout -= 1;
         }
 
@@ -147,24 +148,24 @@ impl Controller {
 
     /// Read the configuration byte (or command byte) of the controller. This is the same as
     /// reading byte 0 of the internal RAM.
-    pub fn read_config(&mut self) -> Result<ControllerConfig> {
-        Ok(ControllerConfig::from_bits_truncate(
+    pub fn read_config(&mut self) -> Result<ControllerConfigFlags> {
+        Ok(ControllerConfigFlags::from_bits_truncate(
             self.read_internal_ram(0)?,
         ))
     }
 
     /// Write the configuration byte (or command byte) of the controller. This is the same as
     /// writing to byte 0 of the internal RAM.
-    pub fn write_config(&mut self, config: ControllerConfig) -> Result<()> {
+    pub fn write_config(&mut self, config: ControllerConfigFlags) -> Result<()> {
         Ok(self.write_internal_ram(0, config.bits())?)
     }
 
-    /// Disable the mouse. Sets the [ControllerConfig::DISABLE_MOUSE] flag.
+    /// Disable the mouse. Sets the [ControllerConfigFlags::DISABLE_MOUSE] flag.
     pub fn disable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::DisableMouse)
     }
 
-    /// Enable the mouse. Clears the [ControllerConfig::DISABLE_MOUSE] flag.
+    /// Enable the mouse. Clears the [ControllerConfigFlags::DISABLE_MOUSE] flag.
     pub fn enable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::EnableMouse)
     }
@@ -209,20 +210,20 @@ impl Controller {
         Ok(result)
     }
 
-    /// Disable the keyboard. Sets the [ControllerConfig::DISABLE_KEYBOARD] flag.
+    /// Disable the keyboard. Sets the [ControllerConfigFlags::DISABLE_KEYBOARD] flag.
     pub fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
-    /// Enable the keyboard. Clears the [ControllerConfig::DISABLE_KEYBOARD] flag.
+    /// Enable the keyboard. Clears the [ControllerConfigFlags::DISABLE_KEYBOARD] flag.
     pub fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
 
     /// Read the state of the controller's input port.
-    pub fn read_controller_input(&mut self) -> Result<ControllerInput> {
+    pub fn read_input_port(&mut self) -> Result<InputPortFlags> {
         self.write_command(Command::ReadControllerInput)?;
-        Ok(ControllerInput::from_bits_truncate(self.read_data()?))
+        Ok(InputPortFlags::from_bits_truncate(self.read_data()?))
     }
 
     /// Write the low nibble of the controller's input port to the low nibble of the controller
@@ -238,13 +239,13 @@ impl Controller {
     }
 
     /// Read the state of the controller's output port.
-    pub fn read_controller_output(&mut self) -> Result<ControllerOutput> {
+    pub fn read_output_port(&mut self) -> Result<OutputPortFlags> {
         self.write_command(Command::ReadControllerOutput)?;
-        Ok(ControllerOutput::from_bits_truncate(self.read_data()?))
+        Ok(OutputPortFlags::from_bits_truncate(self.read_data()?))
     }
 
     /// Write the state of the controller's output port.
-    pub fn write_controller_output(&mut self, output: ControllerOutput) -> Result<()> {
+    pub fn write_output_port(&mut self, output: OutputPortFlags) -> Result<()> {
         self.write_command(Command::WriteControllerOutput)?;
         self.write_data(output.bits())
     }
@@ -267,6 +268,12 @@ impl Controller {
     pub fn write_mouse(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouse)?;
         self.write_data(data)
+    }
+
+    /// Read the state of the controller's test port.
+    pub fn read_test_port(&mut self) -> Result<TestPortFlags> {
+        self.write_command(Command::ReadTestPort)?;
+        Ok(TestPortFlags::from_bits_truncate(self.read_data()?))
     }
 
     /// Pulse the low nibble of the given byte onto the lower nibble of the controller output port.
