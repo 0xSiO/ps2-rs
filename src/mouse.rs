@@ -34,6 +34,18 @@ enum Command {
     ResetAndSelfTest = 0xff,
 }
 
+/// A PS/2 mouse.
+///
+/// This provides the functionality of a typical PS/2 mouse, as well as PS/2 devices
+/// that act like mice, like touchpads or wireless mouse receivers.
+///
+/// # Examples
+/// ```
+/// use ps2::Controller;
+///
+/// let mut controller = unsafe { Controller::new() };
+/// let mut mouse = controller.mouse();
+/// ```
 #[derive(Debug)]
 pub struct Mouse<'c> {
     controller: &'c mut Controller,

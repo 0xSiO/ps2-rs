@@ -36,6 +36,19 @@ enum Command {
     ResetAndSelfTest = 0xff,
 }
 
+/// A PS/2 keyboard.
+///
+/// This provides the functionality of a typical PS/2 keyboard, as well as PS/2 devices
+/// that act like keyboards, such as barcode scanners, card readers, fingerprint scanners,
+/// etc.
+///
+/// # Examples
+/// ```
+/// use ps2::Controller;
+///
+/// let mut controller = unsafe { Controller::new() };
+/// let mut keyboard = controller.keyboard();
+/// ```
 #[derive(Debug)]
 pub struct Keyboard<'c> {
     controller: &'c mut Controller,
