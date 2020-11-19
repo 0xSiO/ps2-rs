@@ -1,4 +1,6 @@
-// For details, see https://web.archive.org/web/20200616182207/https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html#ss10.3
+/// PS/2 Keyboard device type.
+///
+/// For details, read the section named "Keyboard IDs" on this page: [https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html#ss10.3](https://web.archive.org/web/20200616182207/https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html#ss10.3)
 #[derive(Debug, PartialEq, Eq)]
 pub enum KeyboardType {
     XT,
