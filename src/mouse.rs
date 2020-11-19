@@ -37,7 +37,7 @@ enum Command {
 /// A PS/2 mouse.
 ///
 /// This provides the functionality of a typical PS/2 mouse, as well as PS/2 devices
-/// that act like mice, like touchpads or wireless mouse receivers.
+/// that act like mice, such as touchpads or wireless mouse receivers.
 ///
 /// # Examples
 /// ```
