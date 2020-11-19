@@ -113,17 +113,17 @@ impl<'c> Mouse<'c> {
     pub fn read_data(&mut self) -> Result<(MouseMovement, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
         let movement_flags = MouseMovement::from_bits_truncate(self.controller.read_data()?);
-        let mut x_movement = self.controller.read_data()? as i16;
-        let mut y_movement = self.controller.read_data()? as i16;
+        let mut x_movement = self.controller.read_data()? as u16;
+        let mut y_movement = self.controller.read_data()? as u16;
 
         if movement_flags.contains(MouseMovement::X_SIGN_BIT) {
-            x_movement *= -1;
+            x_movement |= 0xff00;
         }
         if movement_flags.contains(MouseMovement::Y_SIGN_BIT) {
-            y_movement *= -1;
+            y_movement |= 0xff00;
         }
 
-        Ok((movement_flags, x_movement, y_movement))
+        Ok((movement_flags, x_movement as i16, y_movement as i16))
     }
 
     pub fn reset_wrap_mode(&mut self) -> Result<()> {
