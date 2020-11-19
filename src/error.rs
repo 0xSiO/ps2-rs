@@ -1,6 +1,5 @@
 #[derive(Debug)]
 pub enum ControllerError {
-    WouldBlock,
     Timeout,
     TestFailed { response: u8 },
 }
