@@ -7,7 +7,7 @@ use crate::{
     mouse::Mouse,
 };
 
-const DATA_PORT: u16 = 0x60;
+const DATA_REGISTER: u16 = 0x60;
 const COMMAND_REGISTER: u16 = 0x64;
 const TIMEOUT: u16 = 10_000;
 
@@ -38,36 +38,42 @@ pub(crate) enum Command {
 
 /// The PS/2 controller.
 ///
-/// Provides the functionality of an Intel 8042 chip. Many computers nowadays don't have
-/// PS/2 connectors, but emulate the mouse and keyboard as PS/2 devices through USB. The
-/// implementation of this emulation is usually different from manufacturer to
-/// manufacturer and cannot always be relied upon to perform correctly. Therefore, if
-/// you're writing an operating system, you should disable this legacy support once the
-/// USB controller has been initialized.
+/// Provides the functionality of an Intel 8042 chip. Many computers nowadays don't have PS/2
+/// connectors, but emulate the mouse and keyboard as PS/2 devices through USB. The implementation
+/// of this emulation is usually different from manufacturer to manufacturer and cannot always be
+/// relied upon to perform correctly. Therefore, if you're writing an operating system, you should
+/// disable this legacy support once the USB controller has been initialized.
 #[derive(Debug)]
 pub struct Controller {
     command_register: Port<u8>,
-    data_port: Port<u8>,
+    data_register: Port<u8>,
 }
 
 impl Controller {
-    // This must only be called once. Only one Controller should be able to write to the
-    // command and data ports.
+    /// Create a handle to the PS/2 controller.
+    ///
+    /// # Safety
+    ///
+    /// This must only be called once. Only one Controller should be able to access the command and
+    /// data ports at addresses `0x64` and `0x60`.
     pub const unsafe fn new() -> Self {
         Self {
             command_register: Port::new(COMMAND_REGISTER),
-            data_port: Port::new(DATA_PORT),
+            data_register: Port::new(DATA_REGISTER),
         }
     }
 
+    /// Obtain a handle to the keyboard.
     pub const fn keyboard(&mut self) -> Keyboard {
         Keyboard::new(self)
     }
 
+    /// Obtain a handle to the mouse.
     pub const fn mouse(&mut self) -> Mouse {
         Mouse::new(self)
     }
 
+    /// Read the status register of the controller.
     pub fn read_status(&mut self) -> ControllerStatus {
         ControllerStatus::from_bits_truncate(unsafe { self.command_register.read() })
     }
@@ -105,14 +111,16 @@ impl Controller {
 
     pub(crate) fn read_data(&mut self) -> Result<u8> {
         self.wait_for_read()?;
-        Ok(unsafe { self.data_port.read() })
+        Ok(unsafe { self.data_register.read() })
     }
 
     pub(crate) fn write_data(&mut self, data: u8) -> Result<()> {
         self.wait_for_write()?;
-        Ok(unsafe { self.data_port.write(data) })
+        Ok(unsafe { self.data_register.write(data) })
     }
 
+    /// Read a byte from the controller's internal RAM. The desired byte index must be between 0
+    /// and 31. Byte 0 is also known as the configuration byte or command byte.
     pub fn read_internal_ram(&mut self, byte_number: u8) -> Result<u8> {
         // Limit from 0 - 31, start command byte at 0x20
         let command = Command::ReadInternalRam as u8 | byte_number & 0x1f;
@@ -124,6 +132,8 @@ impl Controller {
         self.read_data()
     }
 
+    /// Write a byte to the controller's internal RAM. The desired byte index must be between 0
+    /// and 31. Byte 0 is also known as the configuration byte or command byte.
     pub fn write_internal_ram(&mut self, byte_number: u8, data: u8) -> Result<()> {
         // Limit from 0 - 31, start command byte at 0x60
         let command = Command::WriteInternalRam as u8 | byte_number & 0x1f;
@@ -135,20 +145,31 @@ impl Controller {
         self.write_data(data)
     }
 
+    /// Read the configuration byte (or command byte) of the controller. This is the same as
+    /// reading byte 0 of the internal RAM.
     pub fn read_config(&mut self) -> Result<ControllerConfig> {
         Ok(ControllerConfig::from_bits_truncate(
             self.read_internal_ram(0)?,
         ))
     }
 
+    /// Write the configuration byte (or command byte) of the controller. This is the same as
+    /// writing to byte 0 of the internal RAM.
+    pub fn write_config(&mut self, config: ControllerConfig) -> Result<()> {
+        Ok(self.write_internal_ram(0, config.bits())?)
+    }
+
+    /// Disable the mouse.
     pub fn disable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::DisableMouse)
     }
 
+    /// Enable the mouse.
     pub fn enable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::EnableMouse)
     }
 
+    /// Perform a self-test on the mouse. Returns [ControllerError::TestFailed] if the test fails.
     pub fn test_mouse(&mut self) -> Result<()> {
         self.write_command(Command::TestMouse)?;
         match self.read_data()? {
@@ -157,6 +178,8 @@ impl Controller {
         }
     }
 
+    /// Perform a self-test on the controller. Returns [ControllerError::TestFailed] if the test
+    /// fails.
     pub fn test_controller(&mut self) -> Result<()> {
         self.write_command(Command::TestController)?;
         match self.read_data()? {
@@ -165,6 +188,8 @@ impl Controller {
         }
     }
 
+    /// Perform a self-test on the keyboard. Returns [ControllerError::TestFailed] if the test
+    /// fails.
     pub fn test_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::TestKeyboard)?;
         match self.read_data()? {
@@ -173,6 +198,7 @@ impl Controller {
         }
     }
 
+    /// Dump all bytes of the controller's internal RAM.
     // TODO: Test this, eventually. I wasn't able to get it working with any of my devices
     pub fn diagnostic_dump(&mut self) -> Result<[u8; 32]> {
         self.write_command(Command::DiagnosticDump)?;
@@ -183,52 +209,67 @@ impl Controller {
         Ok(result)
     }
 
+    /// Disable the keyboard.
     pub fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
+    /// Enable the keyboard.
     pub fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
 
+    /// Read the state of the controller's input port.
     pub fn read_controller_input(&mut self) -> Result<ControllerInput> {
         self.write_command(Command::ReadControllerInput)?;
         Ok(ControllerInput::from_bits_truncate(self.read_data()?))
     }
 
+    /// Write the low nibble of the controller's input port to the low nibble of the controller
+    /// status register.
     pub fn write_input_low_nibble_to_status(&mut self) -> Result<()> {
         self.write_command(Command::WriteLowInputNibbleToStatus)
     }
 
+    /// Write the high nibble of the controller's input port to the high nibble of the controller
+    /// status register.
     pub fn write_input_high_nibble_to_status(&mut self) -> Result<()> {
         self.write_command(Command::WriteHighInputNibbleToStatus)
     }
 
+    /// Read the state of the controller's output port.
     pub fn read_controller_output(&mut self) -> Result<ControllerOutput> {
         self.write_command(Command::ReadControllerOutput)?;
         Ok(ControllerOutput::from_bits_truncate(self.read_data()?))
     }
 
+    /// Write the state of the controller's output port.
     pub fn write_controller_output(&mut self, output: ControllerOutput) -> Result<()> {
         self.write_command(Command::WriteControllerOutput)?;
         self.write_data(output.bits())
     }
 
+    /// Write a byte to the data buffer as if it were received from the keyboard. This will trigger
+    /// an interrupt if interrupts are enabled.
     pub fn write_keyboard_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteKeyboardBuffer)?;
         self.write_data(data)
     }
 
+    /// Write a byte to the data buffer as if it were received from the mouse. This will trigger an
+    /// interrupt if interrupts are enabled.
     pub fn write_mouse_buffer(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouseBuffer)?;
         self.write_data(data)
     }
 
+    /// Write a byte to the mouse's data buffer.
     pub fn write_mouse(&mut self, data: u8) -> Result<()> {
         self.write_command(Command::WriteMouse)?;
         self.write_data(data)
     }
 
+    /// Pulse the low nibble of the given byte onto the lower nibble of the controller output port.
     pub fn pulse_output_low_nibble(&mut self, data: u8) -> Result<()> {
         // Make the high nibble all 1's
         let command = Command::PulseOutput as u8 | data;
