@@ -2,13 +2,22 @@ use bitflags::bitflags;
 
 bitflags! {
     pub struct ControllerStatus: u8 {
+        /// Whether there is data available to read at port 0x60.
         const OUTPUT_FULL        = 0b00000001;
+        /// Whether data has been written to port 0x60.
         const INPUT_FULL         = 0b00000010;
+        /// Should be set if the system boots and the Basic Assurance Test passes successfully.
         const SYSTEM_FLAG        = 0b00000100;
+        /// Whether data written to port 0x60 is for a PS/2 controller command rather than a PS/2
+        /// device.
         const INPUT_IS_COMMAND   = 0b00001000;
+        /// Whether the keyboard functionality is inhibited.
         const KEYBOARD_LOCK      = 0b00010000;
+        /// Whether there is data available to read from the mouse at port 0x60.
         const MOUSE_OUTPUT_FULL  = 0b00100000;
+        /// Whether a timeout error occurred during command write or response.
         const TIMEOUT_ERR        = 0b01000000;
+        /// Whether a communication error occurred.
         const PARITY_ERR         = 0b10000000;
     }
 }
@@ -19,8 +28,7 @@ bitflags! {
         const ENABLE_KEYBOARD_INTERRUPT = 0b00000001;
         /// Whether the mouse should trigger any interrupts.
         const ENABLE_MOUSE_INTERRUPT    = 0b00000010;
-        /// Third bit in the status register. 0 means power-on reset, 1 means the Basic
-        /// Assurance Test has been completed successfully.
+        /// Third bit in the status register. See [ControllerStatus::SYSTEM_FLAG].
         const SET_SYSTEM_FLAG           = 0b00000100;
         /// Whether to disable the keyboard interface by driving the clock line low.
         const DISABLE_KEYBOARD          = 0b00010000;
