@@ -15,11 +15,18 @@ bitflags! {
 
 bitflags! {
     pub struct ControllerConfig: u8 {
+        /// Whether the keyboard should trigger any interrupts.
         const ENABLE_KEYBOARD_INTERRUPT = 0b00000001;
+        /// Whether the mouse should trigger any interrupts.
         const ENABLE_MOUSE_INTERRUPT    = 0b00000010;
+        /// Third bit in the status register. 0 means power-on reset, 1 means the Basic
+        /// Assurance Test has been completed successfully.
         const SET_SYSTEM_FLAG           = 0b00000100;
+        /// Whether to disable the keyboard interface by driving the clock line low.
         const DISABLE_KEYBOARD          = 0b00010000;
+        /// Whether to disable the mouse interface by driving the clock line low.
         const DISABLE_MOUSE             = 0b00100000;
+        /// Whether to enable translation of keyboard scancodes to set 1.
         const ENABLE_TRANSLATE          = 0b01000000;
     }
 }
