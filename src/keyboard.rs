@@ -127,7 +127,9 @@ impl<'c> Keyboard<'c> {
         }
     }
 
-    /// Set the typematic repeat rate and delay. Use the 'Repeat rate' and 'Delay' tables on
+    /// Set the typematic repeat rate and delay.
+    ///
+    /// Use the 'Repeat rate' and 'Delay' tables on
     /// [this](https://web.archive.org/web/20091128232820/http://www.computer-engineering.org/index.php?title=PS/2_Keyboard_Interface#Command_Set)
     /// page to create the configuration byte.
     pub fn set_typematic_rate_and_delay(&mut self, typematic_config: u8) -> Result<()> {
@@ -199,8 +201,9 @@ impl<'c> Keyboard<'c> {
         }
     }
 
-    /// Reset the keyboard and perform a Basic Assurance Test. Returns
-    /// [`KeyboardError::SelfTestFailed`] if the test fails.
+    /// Reset the keyboard and perform a Basic Assurance Test.
+    ///
+    /// Returns [`KeyboardError::SelfTestFailed`] if the test fails.
     pub fn reset_and_self_test(&mut self) -> Result<()> {
         self.controller
             .write_data(Command::ResetAndSelfTest as u8)?;
