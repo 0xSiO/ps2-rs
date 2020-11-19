@@ -41,9 +41,9 @@ bitflags! {
 
 bitflags! {
     pub struct ControllerInput: u8 {
-        /// Keyboard data line.
+        /// Keyboard input data line.
         const KEYBOARD_DATA        = 0b00000001;
-        /// Mouse data line.
+        /// Mouse input data line.
         const MOUSE_DATA           = 0b00000010;
         /// Whether the motherboard has access to external RAM.
         const ENABLE_EXTRA_RAM     = 0b00010000;
@@ -58,13 +58,21 @@ bitflags! {
 
 bitflags! {
     pub struct ControllerOutput: u8 {
+        /// Whether to reset the CPU.
         const SYSTEM_RESET       = 0b00000001;
+        /// Whether the 20th address line is enabled.
         const A20_GATE           = 0b00000010;
+        /// Whether mouse data line is pulled low.
         const MOUSE_DATA         = 0b00000100;
+        /// Whether mouse clock line is pulled low.
         const MOUSE_CLOCK        = 0b00001000;
+        /// Whether keyboard triggers IRQ1.
         const KEYBOARD_INTERRUPT = 0b00010000;
+        /// Whether mouse triggers IRQ12.
         const MOUSE_INTERRUPT    = 0b00100000;
+        /// Whether keyboard clock line is pulled low.
         const KEYBOARD_CLOCK     = 0b01000000;
+        /// Whether keyboard data line is pulled low.
         const KEYBOARD_DATA      = 0b10000000;
     }
 }
