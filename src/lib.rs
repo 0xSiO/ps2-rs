@@ -1,6 +1,7 @@
 #![no_std]
 #![feature(const_mut_refs)]
-//! This crate provides comprehensive low-level access to the PS/2 controller and PS/2 devices.
+//! This crate provides comprehensive low-level access to the PS/2 controller and PS/2 devices. It
+//! uses a poll-based approach with a timeout to read and write data to the IO ports.
 
 // References:
 //   https://web.archive.org/web/20091124055529/http://www.computer-engineering.org/index.php?title=Main_Page
