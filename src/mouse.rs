@@ -137,8 +137,8 @@ impl<'c> Mouse<'c> {
     /// Request a movement data packet from the mouse and reset movement counters.
     ///
     /// The first byte returned is a bitfield, and the other two bytes are 9-bit two's complement
-    /// integers for the 'x' and 'y' movement offset relative to the position at which the last
-    /// packet was sent.
+    /// integers for the horizontal and vertical movement offset relative to the position at which
+    /// the last packet was sent.
     pub fn read_data(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
         let movement_flags = MouseMovementFlags::from_bits_truncate(self.controller.read_data()?);
