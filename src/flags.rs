@@ -41,11 +41,17 @@ bitflags! {
 
 bitflags! {
     pub struct ControllerInput: u8 {
+        /// Keyboard data line.
         const KEYBOARD_DATA        = 0b00000001;
+        /// Mouse data line.
         const MOUSE_DATA           = 0b00000010;
+        /// Whether the motherboard has access to external RAM.
         const ENABLE_EXTRA_RAM     = 0b00010000;
+        /// Manufacturing jumper setting for keyboard testing.
         const MANUFACTURING_JUMPER = 0b00100000;
+        /// Keyboard display type bit.
         const MONOCHROME_DISPLAY   = 0b01000000;
+        /// Whether keyboard functionality is enabled.
         const KEYBOARD_ENABLED     = 0b10000000;
     }
 }
