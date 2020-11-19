@@ -160,17 +160,18 @@ impl Controller {
         Ok(self.write_internal_ram(0, config.bits())?)
     }
 
-    /// Disable the mouse. Sets the [ControllerConfigFlags::DISABLE_MOUSE] flag.
+    /// Disable the mouse. Sets the [`ControllerConfigFlags::DISABLE_MOUSE`] flag.
     pub fn disable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::DisableMouse)
     }
 
-    /// Enable the mouse. Clears the [ControllerConfigFlags::DISABLE_MOUSE] flag.
+    /// Enable the mouse. Clears the [`ControllerConfigFlags::DISABLE_MOUSE`] flag.
     pub fn enable_mouse(&mut self) -> Result<()> {
         self.write_command(Command::EnableMouse)
     }
 
-    /// Perform a self-test on the mouse. Returns [ControllerError::TestFailed] if the test fails.
+    /// Perform a self-test on the mouse. Returns [`ControllerError::TestFailed`] if the test
+    /// fails.
     pub fn test_mouse(&mut self) -> Result<()> {
         self.write_command(Command::TestMouse)?;
         match self.read_data()? {
@@ -179,7 +180,7 @@ impl Controller {
         }
     }
 
-    /// Perform a self-test on the controller. Returns [ControllerError::TestFailed] if the test
+    /// Perform a self-test on the controller. Returns [`ControllerError::TestFailed`] if the test
     /// fails.
     pub fn test_controller(&mut self) -> Result<()> {
         self.write_command(Command::TestController)?;
@@ -189,7 +190,7 @@ impl Controller {
         }
     }
 
-    /// Perform a self-test on the keyboard. Returns [ControllerError::TestFailed] if the test
+    /// Perform a self-test on the keyboard. Returns [`ControllerError::TestFailed`] if the test
     /// fails.
     pub fn test_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::TestKeyboard)?;
@@ -210,12 +211,12 @@ impl Controller {
         Ok(result)
     }
 
-    /// Disable the keyboard. Sets the [ControllerConfigFlags::DISABLE_KEYBOARD] flag.
+    /// Disable the keyboard. Sets the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
     pub fn disable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::DisableKeyboard)
     }
 
-    /// Enable the keyboard. Clears the [ControllerConfigFlags::DISABLE_KEYBOARD] flag.
+    /// Enable the keyboard. Clears the [`ControllerConfigFlags::DISABLE_KEYBOARD`] flag.
     pub fn enable_keyboard(&mut self) -> Result<()> {
         self.write_command(Command::EnableKeyboard)
     }
