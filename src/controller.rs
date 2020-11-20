@@ -58,8 +58,9 @@ impl Controller {
     ///
     /// # Safety
     ///
-    /// This must only be called once. Only one Controller should be able to access the command and
-    /// data ports at addresses `0x64` and `0x60`.
+    /// This should usually only be called once. Only one `Controller` should be able to access the
+    /// command and data ports at a given time. Ensure that IO ports `0x60` and `0x64` are not
+    /// accessed by any other code.
     pub const unsafe fn new() -> Self {
         Self {
             command_register: Port::new(COMMAND_REGISTER),
