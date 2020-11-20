@@ -9,7 +9,7 @@ pub use self::mouse_type::MouseType;
 
 mod mouse_type;
 
-const VALID_RESOLUTIONS: [u8; 4] = [1, 2, 4, 8];
+const VALID_RESOLUTIONS: [u8; 4] = [0, 1, 2, 3];
 const VALID_SAMPLE_RATES: [u8; 7] = [10, 20, 40, 60, 80, 100, 200];
 
 type Result<T> = core::result::Result<T, MouseError>;
