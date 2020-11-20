@@ -146,7 +146,11 @@ impl<'c> Mouse<'c> {
         Ok(self.read_data_packet()?)
     }
 
-    /// Read a movement data packet directly from the data buffer.
+    /// Read an existing movement data packet directly from the data buffer.
+    ///
+    /// The first byte returned is a bitfield, and the other two bytes are 9-bit two's complement
+    /// integers for the horizontal and vertical movement offset relative to the position at which
+    /// the last packet was sent.
     ///
     /// This does **not** send any commands to the mouse. This is useful in interrupt handlers when
     /// we just want to read the data sent by the mouse.
@@ -216,7 +220,7 @@ impl<'c> Mouse<'c> {
     /// Disable data reporting and reset the movement counters.
     ///
     /// This only affects data reporting in stream mode. Note that this only disables reporting,
-    /// not sampling. Movement packets may still be read using [`Mouse::get_data_packet`].
+    /// not sampling. Movement packets may still be read using [`Mouse::request_data_packet`].
     pub fn disable_data_reporting(&mut self) -> Result<()> {
         self.write_command(Command::DisableDataReporting, None)
     }

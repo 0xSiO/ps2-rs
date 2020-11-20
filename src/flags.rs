@@ -2,19 +2,19 @@ use bitflags::bitflags;
 
 bitflags! {
     pub struct ControllerStatusFlags: u8 {
-        /// Whether there is data available to read at port 0x60.
+        /// Whether there is data available to read at port `0x60`.
         const OUTPUT_FULL        = 0b00000001;
-        /// Whether data has been written to port 0x60.
+        /// Whether data has been written to port `0x60`.
         const INPUT_FULL         = 0b00000010;
         /// Should be set if the system boots and the Basic Assurance Test passes successfully.
         /// Unset after a power-on reset.
         const SYSTEM_FLAG        = 0b00000100;
-        /// Whether data written to port 0x60 is for a PS/2 controller command rather than a PS/2
+        /// Whether data written to port `0x60` is for a PS/2 controller command rather than a PS/2
         /// device.
         const INPUT_IS_COMMAND   = 0b00001000;
         /// Whether the keyboard functionality is inhibited.
         const KEYBOARD_LOCK      = 0b00010000;
-        /// Whether there is data available to read from the mouse at port 0x60.
+        /// Whether there is data available to read from the mouse at port `0x60`.
         const MOUSE_OUTPUT_FULL  = 0b00100000;
         /// Whether a timeout error occurred during command write or response.
         const TIMEOUT_ERR        = 0b01000000;
