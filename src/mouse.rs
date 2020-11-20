@@ -112,7 +112,7 @@ impl<'c> Mouse<'c> {
     ///
     /// The first byte returned is a bitfield, the second byte is the mouse resolution, and the
     /// third is the sample rate.
-    pub fn request_status(&mut self) -> Result<(MouseStatusFlags, u8, u8)> {
+    pub fn get_status_packet(&mut self) -> Result<(MouseStatusFlags, u8, u8)> {
         self.write_command(Command::StatusRequest, None)?;
         let status = MouseStatusFlags::from_bits_truncate(self.controller.read_data()?);
         let resolution = self.controller.read_data()?;
@@ -139,7 +139,9 @@ impl<'c> Mouse<'c> {
     /// The first byte returned is a bitfield, and the other two bytes are 9-bit two's complement
     /// integers for the horizontal and vertical movement offset relative to the position at which
     /// the last packet was sent.
-    pub fn read_data(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
+    // TODO: Maybe add a new method to read a packet that doesn't send any commands. This would
+    //       be useful in interrupt handlers.
+    pub fn get_data_packet(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
         let movement_flags = MouseMovementFlags::from_bits_truncate(self.controller.read_data()?);
         let mut x_movement = self.controller.read_data()? as u16;
@@ -206,7 +208,7 @@ impl<'c> Mouse<'c> {
     /// Disable data reporting and reset movement counters.
     ///
     /// This only affects data reporting in stream mode. Note that this only disables reporting,
-    /// not sampling. Movement packets may still be read using [`Mouse::read_data`].
+    /// not sampling. Movement packets may still be read using [`Mouse::get_data_packet`].
     pub fn disable_data_reporting(&mut self) -> Result<()> {
         self.write_command(Command::DisableDataReporting, None)
     }
