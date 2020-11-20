@@ -108,7 +108,7 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetResolution, Some(resolution_index))
     }
 
-    /// Request a status packet from the mouse and reset movement counters.
+    /// Request a status packet from the mouse and reset the movement counters.
     ///
     /// The first byte returned is a bitfield, the second byte is the mouse resolution, and the
     /// third is the sample rate.
@@ -134,15 +134,23 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetStreamMode, None)
     }
 
-    /// Request a movement data packet from the mouse and reset movement counters.
+    /// Request a movement data packet from the mouse and reset the movement counters.
     ///
     /// The first byte returned is a bitfield, and the other two bytes are 9-bit two's complement
     /// integers for the horizontal and vertical movement offset relative to the position at which
     /// the last packet was sent.
-    // TODO: Maybe add a new method to read a packet that doesn't send any commands. This would
-    //       be useful in interrupt handlers.
-    pub fn get_data_packet(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
+    ///
+    /// If you're writing an interrupt handler, see [`Mouse::read_data_packet`].
+    pub fn request_data_packet(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
+        Ok(self.read_data_packet()?)
+    }
+
+    /// Read a movement data packet directly from the data buffer.
+    ///
+    /// This does **not** send any commands to the mouse. This is useful in interrupt handlers when
+    /// we just want to read the data sent by the mouse.
+    pub fn read_data_packet(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         let movement_flags = MouseMovementFlags::from_bits_truncate(self.controller.read_data()?);
         let mut x_movement = self.controller.read_data()? as u16;
         let mut y_movement = self.controller.read_data()? as u16;
@@ -188,7 +196,7 @@ impl<'c> Mouse<'c> {
         Ok(MouseType::from(self.controller.read_data()?))
     }
 
-    /// Set the mouse sample rate and reset movement counters.
+    /// Set the mouse sample rate and reset the movement counters.
     ///
     /// Valid rates are `10`, `20`, `40`, `60`, `80`, `100`, and `200`, in samples per second.
     pub fn set_sample_rate(&mut self, sample_rate: u8) -> Result<()> {
@@ -198,14 +206,14 @@ impl<'c> Mouse<'c> {
         self.write_command(Command::SetSampleRate, Some(sample_rate))
     }
 
-    /// Enable data reporting and reset movement counters.
+    /// Enable data reporting and reset the movement counters.
     ///
     /// This only affects data reporting in stream mode.
     pub fn enable_data_reporting(&mut self) -> Result<()> {
         self.write_command(Command::EnableDataReporting, None)
     }
 
-    /// Disable data reporting and reset movement counters.
+    /// Disable data reporting and reset the movement counters.
     ///
     /// This only affects data reporting in stream mode. Note that this only disables reporting,
     /// not sampling. Movement packets may still be read using [`Mouse::get_data_packet`].
