@@ -181,7 +181,7 @@ impl<'c> Mouse<'c> {
     }
 
     /// Attempt to obtain a device identifier for this mouse.
-    pub fn get_device_id(&mut self) -> Result<MouseType> {
+    pub fn get_mouse_type(&mut self) -> Result<MouseType> {
         self.write_command(Command::GetDeviceID, None)?;
         Ok(MouseType::from(self.controller.read_data()?))
     }

@@ -107,7 +107,7 @@ impl<'c> Keyboard<'c> {
     }
 
     /// Attempt to obtain a device identifier for this keyboard.
-    pub fn identify_keyboard(&mut self) -> Result<KeyboardType> {
+    pub fn get_keyboard_type(&mut self) -> Result<KeyboardType> {
         // First check to see if the command was acknowledged
         match self.write_command(Command::IdentifyKeyboard, None) {
             Ok(()) => {}
