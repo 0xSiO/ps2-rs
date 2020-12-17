@@ -205,8 +205,7 @@ impl<'c> Keyboard<'c> {
     ///
     /// Returns [`KeyboardError::SelfTestFailed`] if the test fails.
     pub fn reset_and_self_test(&mut self) -> Result<()> {
-        self.controller
-            .write_data(Command::ResetAndSelfTest as u8)?;
+        self.write_command(Command::ResetAndSelfTest, None)?;
         match self.controller.read_data()? {
             SELF_TEST_PASSED => Ok(()),
             SELF_TEST_FAILED => Err(KeyboardError::SelfTestFailed),
