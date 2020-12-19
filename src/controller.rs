@@ -123,6 +123,9 @@ impl Controller {
     }
 
     /// Read a byte from the data buffer once it is full.
+    ///
+    /// If there is no data available to read within a small timeout, this will return
+    /// [`ControllerError::Timeout`].
     pub fn read_data(&mut self) -> Result<u8> {
         self.wait_for_read()?;
         Ok(unsafe { self.data_register.read() })

@@ -1,6 +1,4 @@
-/// PS/2 Mouse device type.
-///
-/// For details, read [https://www.win.tue.nl/~aeb/linux/kbd/scancodes-13.html#ss13.3](https://web.archive.org/web/20200616182210/https://www.win.tue.nl/%7Eaeb/linux/kbd/scancodes-13.html#ss13.3)
+/// PS/2 mouse device type. For more details, see [here](https://web.archive.org/web/20200616182210/https://www.win.tue.nl/%7Eaeb/linux/kbd/scancodes-13.html#ss13.3).
 #[derive(Debug, PartialEq, Eq)]
 pub enum MouseType {
     Standard,
