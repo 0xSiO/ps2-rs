@@ -113,7 +113,7 @@ impl<'c> Keyboard<'c> {
             Ok(()) => {}
             // XT keyboards don't acknowledge this command
             Err(KeyboardError::Resend) => return Ok(KeyboardType::XT),
-            Err(other) => return Err(other.into()),
+            Err(other) => return Err(other),
         }
 
         // Now check for a second byte - AT keyboards won't give one
@@ -123,7 +123,7 @@ impl<'c> Keyboard<'c> {
                 Ok(KeyboardType::from((first_byte, second_byte)))
             }
             Err(ControllerError::Timeout) => Ok(KeyboardType::ATWithTranslation),
-            Err(other) => return Err(other.into()),
+            Err(other) => Err(other.into()),
         }
     }
 

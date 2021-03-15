@@ -143,7 +143,7 @@ impl<'c> Mouse<'c> {
     /// If you're writing an interrupt handler, see [`Mouse::read_data_packet`].
     pub fn request_data_packet(&mut self) -> Result<(MouseMovementFlags, i16, i16)> {
         self.write_command(Command::ReadData, None)?;
-        Ok(self.read_data_packet()?)
+        self.read_data_packet()
     }
 
     /// Read an existing movement data packet directly from the data buffer.
