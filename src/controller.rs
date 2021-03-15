@@ -69,12 +69,12 @@ impl Controller {
     }
 
     /// Obtain a handle to the keyboard.
-    pub const fn keyboard(&mut self) -> Keyboard {
+    pub const fn keyboard(&mut self) -> Keyboard<'_> {
         Keyboard::new(self)
     }
 
     /// Obtain a handle to the mouse.
-    pub const fn mouse(&mut self) -> Mouse {
+    pub const fn mouse(&mut self) -> Mouse<'_> {
         Mouse::new(self)
     }
 
@@ -119,7 +119,8 @@ impl Controller {
 
     pub(crate) fn write_command(&mut self, command: Command) -> Result<()> {
         self.wait_for_write()?;
-        Ok(unsafe { self.command_register.write(command as u8) })
+        unsafe { self.command_register.write(command as u8) };
+        Ok(())
     }
 
     /// Read a byte from the data buffer once it is full.
@@ -134,7 +135,8 @@ impl Controller {
     /// Write a byte to the data buffer once it is empty.
     pub fn write_data(&mut self, data: u8) -> Result<()> {
         self.wait_for_write()?;
-        Ok(unsafe { self.data_register.write(data) })
+        unsafe { self.data_register.write(data) };
+        Ok(())
     }
 
     /// Read a byte from the controller's internal RAM.
@@ -178,7 +180,7 @@ impl Controller {
     /// Write the configuration byte (or command byte) of the controller. This is the same as
     /// writing to byte 0 of the internal RAM.
     pub fn write_config(&mut self, config: ControllerConfigFlags) -> Result<()> {
-        Ok(self.write_internal_ram(0, config.bits())?)
+        self.write_internal_ram(0, config.bits())
     }
 
     /// Disable the mouse. Sets the [`ControllerConfigFlags::DISABLE_MOUSE`] flag.

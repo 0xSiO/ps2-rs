@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(const_mut_refs)]
+#![warn(rust_2018_idioms)]
 //! This crate provides comprehensive low-level access to the PS/2 controller and PS/2 devices. It
 //! uses a poll-based approach with a timeout to read and write data to the IO ports.
 //!
