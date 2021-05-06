@@ -1,5 +1,5 @@
 # ps2
-[![Build Status](https://travis-ci.com/lucis-fluxum/ps2-rs.svg?branch=master)](https://travis-ci.com/lucis-fluxum/ps2-rs)
+[![CI](https://github.com/lucis-fluxum/ps2-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/lucis-fluxum/ps2-rs/actions/workflows/ci.yml)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![crates.io](https://img.shields.io/crates/v/ps2.svg)](https://crates.io/crates/ps2)
 [![API docs](https://docs.rs/ps2/badge.svg)](https://docs.rs/ps2)
