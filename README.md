@@ -10,6 +10,10 @@ A general PS/2 device driver for nightly Rust.
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/lucis-fluxum/ps2-rs.
 
+## Donations
+
+- XMR: `89o1ojdNM8i3xWCxdb68AHGaiF67v3xJa11Xk7DjsxLWKWKUdUSLYSxMsFiEPSozUddQ8MMfE88n6UvPuNUE9fxW5bXffXs`
+
 ## License
 
 This crate is available as open source under the terms of the
