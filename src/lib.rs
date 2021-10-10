@@ -94,7 +94,7 @@
 //! Below are some resources I used to develop this library. Note that some resources describing
 //! the PS/2 protocol conflict with each other, so this library is my best effort at testing and
 //! verifying the accuracy of these resources. If you find that something is missing or doesn't
-//! seem quite right, feel free to open an [issue](https://github.com/lucis-fluxum/ps2-rs/issues/new).
+//! seem quite right, feel free to open an [issue](https://github.com/0xSiO/ps2-rs/issues/new).
 //!
 //! - [Adam Chapweske's old site][chepweske], which has several detailed write-ups.
 //! - [Andries Brouwer's "Keyboard scancodes"][brouwer], which is about much more than just

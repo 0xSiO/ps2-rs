@@ -1,10 +1,9 @@
 [package]
 name = "ps2"
 version = "0.2.0"
-authors = ["Luc Street <lucis-fluxum@users.noreply.github.com>"]
 description = "A general PS/2 device driver for nightly Rust."
 readme = "README.md"
-repository = "https://github.com/lucis-fluxum/ps2-rs"
+repository = "https://github.com/0xSiO/ps2-rs"
 categories = ["no-std", "hardware-support"]
 keywords   = ["keyboard", "mouse", "ps2", "driver", "no_std"]
 license = "MIT"
