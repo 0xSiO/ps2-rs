@@ -67,6 +67,11 @@ impl Controller {
 
     /// Like `new`, but allows specifying an IO timeout, which is the number of times an IO
     /// operation will be attempted before returning [`ControllerError::Timeout`].
+    ///
+    /// # Safety
+    ///
+    /// Ensure that IO ports `0x60` and `0x64` are not accessed by any other code, and that only
+    /// one `Controller` accesses those ports at any point in time.
     pub const unsafe fn with_timeout(timeout: usize) -> Self {
         Self {
             command_register: Port::new(COMMAND_REGISTER),
@@ -153,7 +158,7 @@ impl Controller {
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
         unsafe {
-            self.command_register.write(command as u8);
+            self.command_register.write(command);
         }
         self.read_data()
     }
@@ -168,7 +173,7 @@ impl Controller {
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
         unsafe {
-            self.command_register.write(command as u8);
+            self.command_register.write(command);
         }
         self.write_data(data)
     }
@@ -320,7 +325,7 @@ impl Controller {
         // Since we did some bit fiddling, we can't use write_command
         self.wait_for_write()?;
         unsafe {
-            self.command_register.write(command as u8);
+            self.command_register.write(command);
         }
         Ok(())
     }

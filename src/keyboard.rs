@@ -73,7 +73,7 @@ impl<'c> Keyboard<'c> {
         self.controller.write_data(command as u8)?;
         self.check_response()?;
         if let Some(data) = data {
-            self.controller.write_data(data as u8)?;
+            self.controller.write_data(data)?;
             self.check_response()?;
         }
         Ok(())
